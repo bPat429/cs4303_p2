@@ -7,9 +7,9 @@ import java.util.Random;
 // 2 = Inventory screen
 // 3 = Combat screen
 
-final int   tile_size = 100,
+final int   tile_size = 10,
             dungeon_dimension_step = 1,
-            dungeon_size = 10;
+            dungeon_size = 20;
 
 DungeonLevelHandler dungeon_handler;
 int game_state = 0;

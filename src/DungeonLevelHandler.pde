@@ -17,12 +17,15 @@ final class DungeonLevelHandler {
     private int dungeon_dimension_step;
     // Minimum dungeon room size, including walls
     private int dungeon_room_size;
+    private int dungeon_min_partition_size;
 
     DungeonLevelHandler(int tile_size, int dungeon_dimension_step, int dungeon_size, Random rand) {
         this.tile_size = tile_size;
         this.depth = 0;
         this.dungeon_dimension_step = dungeon_dimension_step;
-        this.dungeon_room_size = dungeon_size / 4;
+        // Constant found by testing different room sizes
+        this.dungeon_min_partition_size = 7;
+        this.dungeon_room_size = 5;
         this.rand = rand;
         generateLevel(dungeon_size);
     }
@@ -32,11 +35,27 @@ final class DungeonLevelHandler {
         // Increase dungeon size every level
         dungeon_size = dungeon_size + depth * dungeon_dimension_step;
         // Default value is 0
-        level_tile_map = new int[dungeon_size+1][dungeon_size+1];
+        level_tile_map = new int[dungeon_size][dungeon_size];
         partition_tree = new DungeonPartitionTree(0, 0, dungeon_size, dungeon_size);
-        partition_tree.partition_width(dungeon_room_size, dungeon_room_size, rand);
+        partition_tree.partition_width(dungeon_min_partition_size, dungeon_min_partition_size, rand);
         partition_tree.create_room(dungeon_room_size, dungeon_room_size, rand);
         partition_tree.apply_to_dungeon(level_tile_map);
+        for (int i = 0; i < level_tile_map.length; i++) {
+            for (int j = 0; j < level_tile_map.length; j++) {
+                switch (level_tile_map[i][j]) {
+                    case 0:
+                        print(" ");
+                        break;
+                    case 1:
+                        print("o");
+                        break;
+                    case 2:
+                        print("x");
+                        break;
+                }
+            }
+            print("\n");
+        }
     }
 
     // Main method used to run the gameloop while the player is exploring a dungeon level.
@@ -52,10 +71,10 @@ final class DungeonLevelHandler {
 
     void draw() {
         // TODO fix this
-        int player_x = level_tile_map.length / 2;
-        int player_y = level_tile_map.length / 2;
+        int player_x = tile_size * level_tile_map.length / 2;
+        int player_y = tile_size * level_tile_map.length / 2;
         pushMatrix();
-        translate(displayWidth/2 - player_x * tile_size, displayHeight/2 - player_y * tile_size);
+        translate(displayWidth/2 - player_x, displayHeight/2 - player_y);
         // Draw the level_tile_map
         for (int x = 0; x < level_tile_map.length; x++) {
             for (int y = 0; y < level_tile_map[x].length; y++) {
@@ -68,8 +87,8 @@ final class DungeonLevelHandler {
                         break;
                     default:
                         fill(0);
-                    rect(x * tile_size, y * tile_size, tile_size, tile_size);
                 }
+                rect(x * tile_size, y * tile_size, tile_size, tile_size);
             }
         }
         popMatrix();

@@ -27,13 +27,12 @@ public class DungeonPartitionTree {
             // TODO fix this
             int min_split = min_width;
             int max_split = part_width - min_width;
-            print("Splits");
-            print(min_split);
-            print(max_split);
+            // This is the offset of the start of the second partition
             int split_point = rand.nextInt((max_split - min_split) + 1) + min_split;
             // Initialise child nodes
+            // Width = split_point + 1 due to 0 indexing
             l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], split_point, part_height);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], width - split_point, part_height);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], part_width - (split_point), part_height);
             // Partition children, alternate partitioning by width and height
             l_child.partition_height(min_height, min_width, rand);
             r_child.partition_height(min_height, min_width, rand);
@@ -41,17 +40,14 @@ public class DungeonPartitionTree {
     }
 
     void partition_height(int min_height, int min_width, Random rand) {
-        if (part_width >= min_width && height >= min_height * 2) {
+        if (part_width >= min_width && part_height >= min_height * 2) {
             // Find the range of values which result in a valid split (rooms maintain the min_height/min_width values)
             int min_split = min_height;
             int max_split = part_height - min_height;
-            print("Splits");
-            print(min_split);
-            print(max_split);
             int split_point = rand.nextInt((max_split - min_split) + 1) + min_split;
             // Initialise child nodes
             l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], part_width, split_point);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - split_point);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - (split_point));
             // Partition children, alternate partitioning by width and height
             l_child.partition_width(min_height, min_width, rand);
             r_child.partition_width(min_height, min_width, rand);
@@ -70,16 +66,13 @@ public class DungeonPartitionTree {
             // Generate bottom left corner for the room
             int bl_x = rand.nextInt((max_x) + 1);
             int bl_y = rand.nextInt((max_y) + 1);
-            int max_room_width = part_width - bl_x;
-            int max_room_height = part_height - bl_y;
+            int max_room_width_variability = part_width - (min_room_width + bl_x);
+            int max_room_height_variability = part_height - (min_room_height + bl_y);
             // Generate top right corner for the room
-            int tr_x = rand.nextInt((max_room_width - min_room_width) + 1) + min_room_width;
-            int tr_y = rand.nextInt((max_room_height - min_room_height) + 1) + min_room_height;
+            int tr_x = rand.nextInt((max_room_width_variability) + 1) + min_room_width + bl_x;
+            int tr_y = rand.nextInt((max_room_height_variability) + 1) + min_room_height + bl_y;
             room_bl_corner =  new int[]{bottom_left_coordinates[0] + bl_x, bottom_left_coordinates[1] + bl_y};
             room_tr_corner =  new int[]{bottom_left_coordinates[0] + tr_x, bottom_left_coordinates[1] + tr_y};
-
-            room_bl_corner =  new int[]{bottom_left_coordinates[0], bottom_left_coordinates[1]};
-            room_tr_corner =  new int[]{bottom_left_coordinates[0] + part_width, bottom_left_coordinates[1] + part_height};
         }
     }
 
@@ -88,9 +81,9 @@ public class DungeonPartitionTree {
             l_child.apply_to_dungeon(level_tile_map);
             r_child.apply_to_dungeon(level_tile_map);
         } else {
-            for (int x = room_bl_corner[0]; x <= (room_tr_corner[0]); x++) {
-                for (int y = room_bl_corner[1]; y <= (room_tr_corner[1]); y++) {
-                    if (x == room_bl_corner[0] || x == room_tr_corner[0] || y == room_bl_corner[1] || y == room_tr_corner[1]) {
+            for (int x = room_bl_corner[0]; x < (room_tr_corner[0]); x++) {
+                for (int y = room_bl_corner[1]; y < (room_tr_corner[1]); y++) {
+                    if (x == room_bl_corner[0] || x == room_tr_corner[0] - 1 || y == room_bl_corner[1] || y == room_tr_corner[1] - 1) {
                         // Set tile to a wall
                         level_tile_map[x][y] = 2;
                     } else {
