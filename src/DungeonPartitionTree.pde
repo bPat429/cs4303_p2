@@ -30,6 +30,14 @@ public class DungeonPartitionTree {
         }
     }
 
+    DungeonPartitionTree getLeftChild() {
+        return l_child;
+    }
+
+    DungeonPartitionTree getRightChild() {
+        return r_child;
+    }
+
     // If the node's width >= 2*min_width, and height >= min_height then allow partitioning.
     // Else set this as a leaf node and create a room
     void partitionWidth(int min_height, int min_width, Random rand) {
@@ -173,6 +181,53 @@ public class DungeonPartitionTree {
                     level_tile_map[x_path_end - 1][y] = 2;
                 }
             }
+        }
+    }
+
+    // Try to find an unoccupied space in a room
+    int[] getRandomUnoccupiedSpace(int[][] level_tile_map, Random rand) {
+        int empty_spaces = 0;
+        for (int x = room_bl_corner[0]; x < (room_tr_corner[0]); x++) {
+            for (int y = room_bl_corner[1]; y < (room_tr_corner[1]); y++) {
+                if (level_tile_map[x][y] == 1) {
+                    empty_spaces++;
+                }
+            }
+        }
+        if (empty_spaces == 0) {
+            return null;
+        } else {
+            int space = rand.nextInt(empty_spaces);
+            for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
+                for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
+                    if (level_tile_map[x][y] == 1) {
+                        if (space > 1) {
+                            space--;
+                        } else {
+                            // Mark point as occupied on the level_tile_map
+                            level_tile_map[x][y] = 3;
+                            return new int[]{x, y};
+                        }
+                    }
+                }
+            }
+            print("Error, this shouldn't have happened");
+            return null;
+        }
+    }
+
+    // Randomly choose between left and right children until a leaf node is found
+    // At the leaf choose a random square in the room
+    int[] spawnStaircases(int[][] level_tile_map, Random rand) {
+        if (l_child != null && r_child != null) {
+            if (rand.nextInt(2) == 0) {
+                return l_child.spawnStaircases(level_tile_map, rand);
+            } else {
+                return r_child.spawnStaircases(level_tile_map, rand);
+            }
+        } else {
+            // Choose an unoccupied point in the room
+            return getRandomUnoccupiedSpace(level_tile_map, rand);
         }
     }
 }

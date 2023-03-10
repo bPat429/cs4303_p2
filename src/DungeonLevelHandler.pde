@@ -7,7 +7,10 @@ final class DungeonLevelHandler {
     // 0 = unpopulated space
     // 1 = room space
     // 2 = wall space (used to draw the border around rooms)
+    // 3 = occupied room space, used to avoid placing multiple spawns in same space
     private int[][] level_tile_map;
+    private int[] entry_staircase;
+    private int[] exit_staircase;
     private DungeonPartitionTree partition_tree;
     private Random rand;
 
@@ -41,6 +44,9 @@ final class DungeonLevelHandler {
         partition_tree.createRoom(dungeon_room_size, dungeon_room_size, rand);
         partition_tree.drawRooms(level_tile_map);
         partition_tree.drawCorridors(level_tile_map);
+        // Use left and right children to star the spawnStaircases to try and ensure staircases aren't in the same room, and are some distance apart
+        partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
+        partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
         printLevel();
     }
 
@@ -58,6 +64,9 @@ final class DungeonLevelHandler {
                         break;
                     case 2:
                         print("x");
+                        break;
+                    case 3:
+                        print("z");
                         break;
                 }
             }
@@ -94,7 +103,7 @@ final class DungeonLevelHandler {
                         break;
                     case 3:
                     // Used for debugging
-                        fill(255);
+                        fill(0);
                         break;
                     default:
                         fill(0);
