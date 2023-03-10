@@ -13,6 +13,7 @@ final class DungeonLevelHandler {
     private int[] exit_staircase;
     private DungeonPartitionTree partition_tree;
     private Random rand;
+    private Player player;
 
     // The size of each tile
     private int tile_size;
@@ -31,6 +32,7 @@ final class DungeonLevelHandler {
         this.dungeon_room_size = 6;
         this.rand = rand;
         generateLevel(dungeon_size);
+        this.player = new Player(entry_staircase[0], entry_staircase[1], tile_size);
     }
 
     // Generate the dungeon level
@@ -45,9 +47,9 @@ final class DungeonLevelHandler {
         partition_tree.drawRooms(level_tile_map);
         partition_tree.drawCorridors(level_tile_map);
         // Use left and right children to star the spawnStaircases to try and ensure staircases aren't in the same room, and are some distance apart
-        partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
-        partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
-        printLevel();
+        entry_staircase = partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
+        exit_staircase = partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
+        //printLevel();
     }
 
     // Error checking method
@@ -86,11 +88,9 @@ final class DungeonLevelHandler {
     }
 
     void draw() {
-        // TODO fix this
-        int player_x = tile_size * level_tile_map.length / 2;
-        int player_y = tile_size * level_tile_map.length / 2;
         pushMatrix();
-        translate(displayWidth/2 - player_x, displayHeight/2 - player_y);
+        float[] player_location = player.getLocation();
+        translate((displayWidth/2) - tile_size * player_location[0], (displayHeight/2) - tile_size * player_location[1]);
         // Draw the level_tile_map
         for (int x = 0; x < level_tile_map.length; x++) {
             for (int y = 0; y < level_tile_map[x].length; y++) {
@@ -102,8 +102,8 @@ final class DungeonLevelHandler {
                         fill(50);
                         break;
                     case 3:
-                    // Used for debugging
-                        fill(0);
+                    // Used for room tiles which are occupied
+                        fill(209);
                         break;
                     default:
                         fill(0);
@@ -111,6 +111,13 @@ final class DungeonLevelHandler {
                 rect(x * tile_size, y * tile_size, tile_size, tile_size);
             }
         }
+        // Draw the staircases
+        fill(0, 255, 0);
+        rect(entry_staircase[0] * tile_size, entry_staircase[1] * tile_size, tile_size, tile_size);
+        fill(255, 0, 0);
+        rect(exit_staircase[0] * tile_size, exit_staircase[1] * tile_size, tile_size, tile_size);
+        // Draw the player
+        player.draw();
         popMatrix();
     }
 }
