@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.ArrayList;
 
 final class DungeonLevelHandler {
     // The current dungeon level
@@ -9,11 +10,10 @@ final class DungeonLevelHandler {
     // 2 = wall space (used to draw the border around rooms)
     // 3 = occupied room space, used to avoid placing multiple spawns in same space
     private int[][] level_tile_map;
-    private int[] entry_staircase;
-    private int[] exit_staircase;
     private DungeonPartitionTree partition_tree;
     private Random rand;
     private Player player;
+    private ArrayList<Interactable> level_interactables;
 
     // The size of each tile
     private int tile_size;
@@ -31,12 +31,13 @@ final class DungeonLevelHandler {
         this.dungeon_min_partition_size = 7;
         this.dungeon_room_size = 6;
         this.rand = rand;
-        generateLevel(dungeon_size);
-        this.player = new Player(entry_staircase[0], entry_staircase[1], tile_size);
+        int[] entry_staircase_pos = generateLevel(dungeon_size);
+        this.player = new Player(entry_staircase_pos[0], entry_staircase_pos[1], tile_size);
     }
 
     // Generate the dungeon level
-    void generateLevel(int dungeon_size) {
+    int[] generateLevel(int dungeon_size) {
+        level_interactables = new ArrayList<Interactable>();
         // Increase dungeon size every level
         dungeon_size = dungeon_size + depth * dungeon_dimension_step;
         // Default value is 0
@@ -47,8 +48,12 @@ final class DungeonLevelHandler {
         partition_tree.drawRooms(level_tile_map);
         partition_tree.drawCorridors(level_tile_map);
         // Use left and right children to star the spawnStaircases to try and ensure staircases aren't in the same room, and are some distance apart
-        entry_staircase = partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
-        exit_staircase = partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
+        int[] entry_staircase_pos = partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
+        int[] exit_staircase_pos = partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
+        level_interactables.add(new Staircase(tile_size, entry_staircase_pos[0], entry_staircase_pos[1], false));
+        level_interactables.add(new Staircase(tile_size, exit_staircase_pos[0], exit_staircase_pos[1], true));
+        partition_tree.spawnItems(level_tile_map, level_interactables, rand, tile_size, 0);
+        return entry_staircase_pos;
         //printLevel();
     }
 
@@ -111,11 +116,12 @@ final class DungeonLevelHandler {
                 rect(x * tile_size, y * tile_size, tile_size, tile_size);
             }
         }
-        // Draw the staircases
-        fill(0, 255, 0);
-        rect(entry_staircase[0] * tile_size, entry_staircase[1] * tile_size, tile_size, tile_size);
-        fill(255, 0, 0);
-        rect(exit_staircase[0] * tile_size, exit_staircase[1] * tile_size, tile_size, tile_size);
+        // Draw all interactables
+        for (int i = 0; i < level_interactables.size(); i++) {
+            if (level_interactables.get(i) != null) {
+                level_interactables.get(i).draw();
+            }
+        }
         // Draw the player
         player.draw();
         popMatrix();

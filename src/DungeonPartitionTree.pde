@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.ArrayList;
 
 // Class used to recursively generate and store the partitions used for procedurally generating the dungeon
 // First create the root node, then call partition_width or partition_height on it. This will start the recursive
@@ -229,5 +230,31 @@ public class DungeonPartitionTree {
             // Choose an unoccupied point in the room
             return getRandomUnoccupiedSpace(level_tile_map, rand);
         }
+    }
+
+    // Spawn items for the player to interact with in each room
+    // Use random probability for deciding whether an item should be spawned
+    // Base spawn probability on how frequently the items should apper
+    // e.g. healing potions are important, so spawn them ~ once every 4 rooms.
+    // zone_type is used to pass the area type to all children in a tree, this allows creating different zones in the level
+    void spawnItems(int[][] level_tile_map, ArrayList<Interactable> level_interactables, Random rand, int tile_size, int zone_type) {
+        if (l_child != null && r_child != null) {
+            l_child.spawnItems(level_tile_map, level_interactables, rand, tile_size, zone_type);
+            r_child.spawnItems(level_tile_map, level_interactables, rand, tile_size, zone_type);
+        } else {
+            int item_level;
+            int[] item_location;
+            // Try to spawn a healing potion
+            if (rand.nextInt(4) == 0) {
+                item_level = rand.nextInt(4);
+                item_location = getRandomUnoccupiedSpace(level_tile_map, rand);
+                level_interactables.add(new HealthPotion(tile_size, item_location[0], item_location[1], item_level));
+            }
+            // Try to spawn an equippable item
+
+            // Try to spawn a spell
+            
+        }
+
     }
 }
