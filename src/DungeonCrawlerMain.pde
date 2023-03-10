@@ -9,7 +9,7 @@ import java.util.Random;
 
 final int   tile_size = 10,
             dungeon_dimension_step = 1,
-            dungeon_size = 20;
+            dungeon_size = 80;
 
 DungeonLevelHandler dungeon_handler;
 int game_state = 0;

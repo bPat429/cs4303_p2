@@ -25,7 +25,7 @@ final class DungeonLevelHandler {
         this.dungeon_dimension_step = dungeon_dimension_step;
         // Constant found by testing different room sizes
         this.dungeon_min_partition_size = 7;
-        this.dungeon_room_size = 5;
+        this.dungeon_room_size = 6;
         this.rand = rand;
         generateLevel(dungeon_size);
     }
@@ -37,12 +37,19 @@ final class DungeonLevelHandler {
         // Default value is 0
         level_tile_map = new int[dungeon_size][dungeon_size];
         partition_tree = new DungeonPartitionTree(0, 0, dungeon_size, dungeon_size);
-        partition_tree.partition_width(dungeon_min_partition_size, dungeon_min_partition_size, rand);
-        partition_tree.create_room(dungeon_room_size, dungeon_room_size, rand);
-        partition_tree.apply_to_dungeon(level_tile_map);
+        partition_tree.partitionWidth(dungeon_min_partition_size, dungeon_min_partition_size, rand);
+        partition_tree.createRoom(dungeon_room_size, dungeon_room_size, rand);
+        partition_tree.drawRooms(level_tile_map);
+        partition_tree.drawCorridors(level_tile_map);
+        printLevel();
+    }
+
+    // Error checking method
+    void printLevel() {
+        print("\n");
         for (int i = 0; i < level_tile_map.length; i++) {
             for (int j = 0; j < level_tile_map.length; j++) {
-                switch (level_tile_map[i][j]) {
+                switch (level_tile_map[j][i]) {
                     case 0:
                         print(" ");
                         break;
@@ -84,6 +91,10 @@ final class DungeonLevelHandler {
                         break;
                     case 2:
                         fill(50);
+                        break;
+                    case 3:
+                    // Used for debugging
+                        fill(255);
                         break;
                     default:
                         fill(0);
