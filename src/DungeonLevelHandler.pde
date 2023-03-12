@@ -82,9 +82,10 @@ final class DungeonLevelHandler {
     }
 
     // Main method used to run the gameloop while the player is exploring a dungeon level.
-    void run() {
+    void run(boolean[] input_array, float frame_duration) {
         // Handle character Movement
-        // Transform so camera tracks player
+        player.handleInput(input_array, frame_duration);
+        player.handleWallCollisions(level_tile_map);
         // Get Monster goal locations
         // Calculate Monster pathfinding
         // Move monsters
@@ -94,8 +95,8 @@ final class DungeonLevelHandler {
 
     void draw() {
         pushMatrix();
-        float[] player_location = player.getLocation();
-        translate((displayWidth/2) - tile_size * player_location[0], (displayHeight/2) - tile_size * player_location[1]);
+        PVector player_location = player.getLocation();
+        translate((displayWidth/2) - tile_size * player_location.x, (displayHeight/2) - tile_size * player_location.y);
         // Draw the level_tile_map
         for (int x = 0; x < level_tile_map.length; x++) {
             for (int y = 0; y < level_tile_map[x].length; y++) {

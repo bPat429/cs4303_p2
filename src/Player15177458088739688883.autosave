@@ -1,4 +1,4 @@
-import java.util.Random;
+simport java.util.Random;
 
 final class Player {
     // Use a float to allow the player to move in smaller increments without needing to 'step' across tiles.
@@ -146,30 +146,24 @@ final class Player {
                             if (closest_tile[0] == x || closest_tile[1] == y) {
                                 // Check if the character penetrates
                                 if (wallIntersectsCharacter(new int[]{x, y})) {
+                                    print("Intesercting");
                                     // Move the character in the x or y direction enough to resolve the collision
                                     // Move in the x direction if the tile is below/above, y direction if the tile is left/right of the character's tile
-                                    float offset;
                                     if (closest_tile[0] == x) {
-                                        if (location.y < y) {
-                                        // Calculate offset
-                                            offset = -1 * (interact_radius - (y - location.y - 0.5));
-                                            // Avoid 'sticky' behaviour by zeroing out the offset if it is pulling towards the wall
-                                            offset = (offset > 0) ? 0 : offset;
+                                        float offset;
+                                        if (closest_tile[1] < y) {
+                                        // Calculate offset from center tile y axis
+                                            offset = 0.25 - (location.y - y - 0.5);
                                         } else {
-                                            offset = (interact_radius - (location.y - y - 0.5));
-                                            offset = (offset < 0) ? 0 : offset;
+                                            offset = 0.25 - (y + 0.5 - location.y);
                                         }
-                                        location.add(0,  offset);
+                                        location.add(0,  offset/2);
                                     } else {
-                                        if (location.x < x) {
-                                        // Calculate offset
-                                            offset = -1 * (interact_radius - (x - location.x - 0.5));
-                                            offset = (offset > 0) ? 0 : offset;
-                                        } else {
-                                            offset = (interact_radius - (location.x - x - 0.5));
-                                            offset = (offset < 0) ? 0 : offset;
+                                        if (closest_tile[0] < x) {
+
+                                        } else if (closest_tile[0] > x) {
+
                                         }
-                                        location.add(offset,  0);
                                     }
                                 }
                             }

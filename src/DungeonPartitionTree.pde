@@ -188,8 +188,8 @@ public class DungeonPartitionTree {
     // Try to find an unoccupied space in a room
     int[] getRandomUnoccupiedSpace(int[][] level_tile_map, Random rand) {
         int empty_spaces = 0;
-        for (int x = room_bl_corner[0]; x < (room_tr_corner[0]); x++) {
-            for (int y = room_bl_corner[1]; y < (room_tr_corner[1]); y++) {
+        for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
+            for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
                 if (level_tile_map[x][y] == 1) {
                     empty_spaces++;
                 }
@@ -213,6 +213,10 @@ public class DungeonPartitionTree {
                 }
             }
             print("Error, this shouldn't have happened");
+            print("\n");
+            print(empty_spaces);
+            print("\n");
+            print(space);
             return null;
         }
     }

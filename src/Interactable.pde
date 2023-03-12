@@ -29,8 +29,8 @@ class Interactable {
 
   // Check if the player is colliding with an object, and therefore if they can interact
   public boolean checkCollision(Player player) {
-    float[] player_location = player.getLocation();
-    float d = (float) Math.sqrt(Math.pow(player_location[0] - location[0], 2) + Math.pow(player_location[0] - location[0], 2));
+    PVector player_location = player.getLocation();
+    float d = (float) Math.sqrt(Math.pow(player_location.x - location[0], 2) + Math.pow(player_location.y - location[0], 2));
     float sum_radius = this.getInteractRadius() + player.getInteractRadius();
     //float d = this.get_centre_mass().dist(other_object.get_centre_mass());
     // Check if the combined radii of the circles is greater than the distance between centres. If so then there is not collision, otherwise there may be a collision.
