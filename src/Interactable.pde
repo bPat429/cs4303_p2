@@ -2,20 +2,19 @@
 class Interactable {
   // The tile on which this is placed
   private int[] location;
-  private int tile_size;
   // Type of the item
   // 0 = equippable
   // 1 = consumable
   // 2 = spell tome (learned on interact)
   // 3 = staircase
   private int type;
+  private PImage item_image;
   // Radius used to tune how far the player may be and still interact
   private float interact_radius;
   static final float spawn_chance = 0.1;
 
-  Interactable(int tile_size, int x_pos, int y_pos) {
+  Interactable(int x_pos, int y_pos) {
     this.location = new int[]{x_pos, y_pos};
-    this.tile_size = tile_size;
     // Set default interact_radius to slightly smaller than a tile
     this.interact_radius = 0.4;
   }
@@ -30,6 +29,10 @@ class Interactable {
 
   int[] getLocation() {
     return location;
+  }
+
+  PImage getImage() {
+    return item_image;
   }
 
   // Check if the player is colliding with an object, and therefore if they can interact
@@ -50,12 +53,12 @@ class Interactable {
 
   // Generic interact method to be overided
   // This represents interacting with the object while in the inventory screen
-  public void use() {
+  public void use(Player player) {
     print("Error, use not implemented yet");
   }
 
   // Generic draw method to be overided
-  void draw() {
+  void draw(int tile_size) {
     fill(0, 255, 0);
     rect(location[0] * tile_size, location[1] * tile_size, tile_size, tile_size);
   }

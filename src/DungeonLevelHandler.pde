@@ -26,7 +26,7 @@ final class DungeonLevelHandler {
     private int dungeon_room_size;
     private int dungeon_min_partition_size;
 
-    DungeonLevelHandler(int tile_size, int dungeon_dimension_step, int dungeon_size, Random rand) {
+    DungeonLevelHandler(int tile_size, int dungeon_dimension_step, int dungeon_size, Random rand, Player player) {
         this.tile_size = tile_size;
         this.depth = 0;
         this.dungeon_dimension_step = dungeon_dimension_step;
@@ -35,6 +35,7 @@ final class DungeonLevelHandler {
         this.dungeon_room_size = 6;
         this.rand = rand;
         this.dungeon_size = dungeon_size;
+        this.player = player;
         generateNextLevel();
         this.search_cooldown = millis();
     }
@@ -54,20 +55,16 @@ final class DungeonLevelHandler {
         // Use left and right children to star the spawnStaircases to try and ensure staircases aren't in the same room, and are some distance apart
         int[] entry_staircase_pos = partition_tree.getLeftChild().spawnStaircases(level_tile_map, rand);
         int[] exit_staircase_pos = partition_tree.getRightChild().spawnStaircases(level_tile_map, rand);
-        level_interactables.add(new Staircase(tile_size, entry_staircase_pos[0], entry_staircase_pos[1], false));
-        level_interactables.add(new Staircase(tile_size, exit_staircase_pos[0], exit_staircase_pos[1], true));
-        partition_tree.spawnItems(level_tile_map, level_interactables, rand, tile_size, 0);
+        level_interactables.add(new Staircase(entry_staircase_pos[0], entry_staircase_pos[1], false));
+        level_interactables.add(new Staircase(exit_staircase_pos[0], exit_staircase_pos[1], true));
+        partition_tree.spawnItems(level_tile_map, level_interactables, rand, 0);
         return entry_staircase_pos;
         //printLevel();
     }
 
     void generateNextLevel() {
         int[] entry_staircase_pos = generateLevel();
-        if (this.player != null) {
-            this.player.setLocation(entry_staircase_pos[0], entry_staircase_pos[1]);
-        } else {
-            this.player = new Player(entry_staircase_pos[0], entry_staircase_pos[1], tile_size);
-        }
+        this.player.setLocation(entry_staircase_pos[0], entry_staircase_pos[1]);
         depth = depth + 1;
     }
 
@@ -169,7 +166,7 @@ final class DungeonLevelHandler {
         // Draw all interactables
         for (int i = 0; i < level_interactables.size(); i++) {
             if (level_interactables.get(i) != null) {
-                level_interactables.get(i).draw();
+                level_interactables.get(i).draw(tile_size);
             }
         }
         // Draw the player

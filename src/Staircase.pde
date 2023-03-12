@@ -2,8 +2,8 @@
 class Staircase extends Interactable {
   private boolean is_down;
 
-  Staircase(int tile_size, int x_pos, int y_pos, boolean is_down) {
-    super(tile_size, x_pos, y_pos);
+  Staircase(int x_pos, int y_pos, boolean is_down) {
+    super(x_pos, y_pos);
     this.is_down = is_down;
     super.type = 3;
   }
@@ -22,7 +22,7 @@ class Staircase extends Interactable {
   }
 
   // Generic draw method to be overided
-  void draw() {
+  void draw(int tile_size) {
     if (is_down) {
       fill(255, 0, 0);
     } else {

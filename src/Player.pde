@@ -1,14 +1,40 @@
 import java.util.Random;
 
 final class Player extends Entity {
-    private final int MAX_INVENTORY = 5;
+    final int MAX_INVENTORY = 10;
     private int inventory_space = MAX_INVENTORY;
     private Interactable[] inventory;
 
-    Player(int spawn_x, int spawn_y, int tile_size) {
-        super(spawn_x, spawn_y, tile_size);
+    // External stat modifiers, all initialise to 0:
+    private int max_health_modifier;
+    private int con_modifier;
+    private int dex_modifier;
+    private int int_modifier;
+    // Weapon modifier is added to base damage
+    private int weapon_modifier;
+    // Player stats
+    private int base_intelligence;
+    int intelligence() {
+        return base_intelligence + int_modifier + level;
+    }
+    int dexterity() {
+        return base_dexterity + dex_modifier + level;
+    }
+    int constitution() {
+        return base_constitution + con_modifier + level;
+    }
+
+    // Calculate damage for the player's attack
+    // spell_modifier is a % value
+    int calculateDamage(int spell_modifier) {
+        return intelligence() * (base_damage + weapon_modifier) * (spell_modifier/100);
+    }
+
+    Player(int tile_size) {
+        super(0, 0, tile_size, 1, "player");
         super.setImage(loadImage("wizard.png"));
         inventory = new Interactable[MAX_INVENTORY];
+        base_intelligence = 5;
     }
 
     boolean pickupItem(Interactable new_item) {
@@ -25,6 +51,18 @@ final class Player extends Entity {
             print("Error, This shouldn't have happened");
             return false;
         }
+    }
+
+    void dropItem(int item_index) {
+        inventory[item_index] = null;
+    }
+
+    void useItem(int item_index) {
+        inventory[item_index].use(this);
+    }
+
+    Interactable[] getInventory() {
+        return inventory;
     }
 
     void handleInput(boolean[] input_array, float frame_duration) {

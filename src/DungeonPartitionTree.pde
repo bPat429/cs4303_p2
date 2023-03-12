@@ -241,10 +241,10 @@ public class DungeonPartitionTree {
     // Base spawn probability on how frequently the items should apper
     // e.g. healing potions are important, so spawn them ~ once every 4 rooms.
     // zone_type is used to pass the area type to all children in a tree, this allows creating different zones in the level
-    void spawnItems(int[][] level_tile_map, ArrayList<Interactable> level_interactables, Random rand, int tile_size, int zone_type) {
+    void spawnItems(int[][] level_tile_map, ArrayList<Interactable> level_interactables, Random rand, int zone_type) {
         if (l_child != null && r_child != null) {
-            l_child.spawnItems(level_tile_map, level_interactables, rand, tile_size, zone_type);
-            r_child.spawnItems(level_tile_map, level_interactables, rand, tile_size, zone_type);
+            l_child.spawnItems(level_tile_map, level_interactables, rand, zone_type);
+            r_child.spawnItems(level_tile_map, level_interactables, rand, zone_type);
         } else {
             int item_level;
             int[] item_location;
@@ -252,12 +252,15 @@ public class DungeonPartitionTree {
             if (rand.nextFloat() <= HealthPotion.spawn_chance) {
                 item_level = rand.nextInt(4);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand);
-                level_interactables.add(new HealthPotion(tile_size, item_location[0], item_location[1], item_level));
+                level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
             // Try to spawn an equippable item
 
             // Try to spawn a spell
             
+            // Try to spawn a monster
+            // TODO add the root of this region to the monster for their territory
+            // TODO implement territories
         }
 
     }

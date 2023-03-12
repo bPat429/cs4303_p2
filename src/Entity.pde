@@ -15,7 +15,32 @@ public class Entity {
     // 2D movement vector, movement_vector[0] = x axis, movement_vector[1] = y axis
     private PVector movement_vector;
 
-    Entity(int spawn_x, int spawn_y, int tile_size) {
+    // Entity game stats
+    int level;
+    // Max health calculated using constitution and level
+    // Balance stats by aiming for the player to kill the monster on the third turn
+    int current_health;
+    int base_constitution = 5;
+    int base_dexterity = 5;
+    int base_damage = 5;
+    int dexterity() {
+        return base_dexterity + level;
+    }
+    int constitution() {
+        return base_constitution + level;
+    }
+    int maxHealth() {
+        return 100 + constitution() * level;
+    }
+    // Dodge chance calculated from dexterity and level, between 0 and 1
+    double dodge_chance(int enemy_dex, int enemy_level) {
+        return Math.tanh((dexterity() * level) - (enemy_dex * enemy_level));
+    }
+    // We also have strength, reserved for monsters, and intelligence which is reserved for the player
+
+    private String type;
+
+    Entity(int spawn_x, int spawn_y, int tile_size, int level, String type) {
         this.location = new PVector(spawn_x, spawn_y);
         this.tile_size = tile_size;
         this.orientation = 0;
@@ -23,6 +48,13 @@ public class Entity {
         this.interact_radius = 0.25;
         this.rotation_const = 0.1;
         this.entity_speed = 7.5;
+        this.level = level;
+        this.current_health = maxHealth();
+        this.type = type;
+    }
+
+    int getHealth() {
+        return current_health;
     }
 
     PVector getLocation() {
