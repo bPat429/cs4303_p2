@@ -14,11 +14,14 @@ final class DungeonLevelHandler {
     private Random rand;
     private Player player;
     private ArrayList<Interactable> level_interactables;
+    // A cooldown used to avoid unnecessarily repeating the search action due to high framerate
+    private float search_cooldown;
 
     // The size of each tile
     private int tile_size;
     // The increase in dungeon size per level (in number of tiles)
     private int dungeon_dimension_step;
+    private int dungeon_size; 
     // Minimum dungeon room size, including walls
     private int dungeon_room_size;
     private int dungeon_min_partition_size;
@@ -31,12 +34,13 @@ final class DungeonLevelHandler {
         this.dungeon_min_partition_size = 7;
         this.dungeon_room_size = 6;
         this.rand = rand;
-        int[] entry_staircase_pos = generateLevel(dungeon_size);
-        this.player = new Player(entry_staircase_pos[0], entry_staircase_pos[1], tile_size);
+        this.dungeon_size = dungeon_size;
+        generateNextLevel();
+        this.search_cooldown = millis();
     }
 
     // Generate the dungeon level
-    int[] generateLevel(int dungeon_size) {
+    int[] generateLevel() {
         level_interactables = new ArrayList<Interactable>();
         // Increase dungeon size every level
         dungeon_size = dungeon_size + depth * dungeon_dimension_step;
@@ -55,6 +59,16 @@ final class DungeonLevelHandler {
         partition_tree.spawnItems(level_tile_map, level_interactables, rand, tile_size, 0);
         return entry_staircase_pos;
         //printLevel();
+    }
+
+    void generateNextLevel() {
+        int[] entry_staircase_pos = generateLevel();
+        if (this.player != null) {
+            this.player.setLocation(entry_staircase_pos[0], entry_staircase_pos[1]);
+        } else {
+            this.player = new Player(entry_staircase_pos[0], entry_staircase_pos[1], tile_size);
+        }
+        depth = depth + 1;
     }
 
     // Error checking method
@@ -81,11 +95,44 @@ final class DungeonLevelHandler {
         }
     }
 
+    // Return the index of the first object which is close enough to interact with
+    // -1 if none are close
+    int checkInteractablessProximity() {
+        // First check if any items are spawned on the current tile
+        if (level_tile_map[Math.round(player.getLocation().x)][Math.round(player.getLocation().y)] == 3) {
+            // check in backwards order because the staircases are at the start of the list, we don't
+            // want the player to miss an item because it's too close to the staircase
+            for (int i = level_interactables.size() - 1; i >=0; i--) {
+                if (level_interactables.get(i).checkCollision(player)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     // Main method used to run the gameloop while the player is exploring a dungeon level.
     void run(boolean[] input_array, float frame_duration) {
         // Handle character Movement
         player.handleInput(input_array, frame_duration);
         player.handleWallCollisions(level_tile_map);
+        // Check if the player is trying to interact with an item
+        // Impose a cooldown because the player doesn't need to search the same place several times
+        if (input_array[6] && (millis() - search_cooldown) > 500) {
+            search_cooldown = millis();
+            // Check if any items are close
+            int index = checkInteractablessProximity();
+            if (index > 0) {
+                if (index == 1) {
+                    // Handle interacting with the down staircase
+                    generateNextLevel();
+                    draw();
+                    return;
+                } else {
+                    level_interactables.get(index).interact();
+                }
+            }
+        }
         // Get Monster goal locations
         // Calculate Monster pathfinding
         // Move monsters

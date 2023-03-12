@@ -7,7 +7,7 @@ class HealthPotion extends Interactable {
     super(tile_size, x_pos, y_pos);
     this.item_level = item_level;
     super.type = 1;
-    super.interact_radius = 0.5;
+    // super.interact_radius = 1;
     this.potion_img = loadImage("HealthPotion.png");
   }
   

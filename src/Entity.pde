@@ -29,6 +29,10 @@ public class Entity {
         return location;
     }
 
+    void setLocation(int x, int y) {
+        this.location.set(x,y);
+    }
+
     float getInteractRadius() {
         return interact_radius;
     }

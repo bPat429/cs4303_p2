@@ -15,8 +15,8 @@ class Interactable {
   Interactable(int tile_size, int x_pos, int y_pos) {
     this.location = new int[]{x_pos, y_pos};
     this.tile_size = tile_size;
-    // Set default interact_radius
-    this.interact_radius = tile_size * 0.75;
+    // Set default interact_radius to slightly smaller than a tile
+    this.interact_radius = 0.4;
   }
 
   float getInteractRadius() {
@@ -27,13 +27,15 @@ class Interactable {
     return type;
   }
 
+  int[] getLocation() {
+    return location;
+  }
+
   // Check if the player is colliding with an object, and therefore if they can interact
   public boolean checkCollision(Player player) {
     PVector player_location = player.getLocation();
-    float d = (float) Math.sqrt(Math.pow(player_location.x - location[0], 2) + Math.pow(player_location.y - location[0], 2));
+    float d = (float) Math.sqrt(Math.pow(player_location.x - location[0], 2) + Math.pow(player_location.y - location[1], 2));
     float sum_radius = this.getInteractRadius() + player.getInteractRadius();
-    //float d = this.get_centre_mass().dist(other_object.get_centre_mass());
-    // Check if the combined radii of the circles is greater than the distance between centres. If so then there is not collision, otherwise there may be a collision.
     return (sum_radius >= d);
   }
   
