@@ -11,6 +11,7 @@ class Interactable {
   private int type;
   // Radius used to tune how far the player may be and still interact
   private float interact_radius;
+  static final float spawn_chance = 0.1;
 
   Interactable(int tile_size, int x_pos, int y_pos) {
     this.location = new int[]{x_pos, y_pos};
@@ -41,8 +42,10 @@ class Interactable {
   
   // Generic interact method to be overided
   // This represents interacting with the object while in the dungeon level screen
-  public void interact() {
+  // Returns true if the item should be removed from the interactables list.
+  public boolean interact(Player player) {
     print("Error, interaction not implemented yet");
+    return false;
   }
 
   // Generic interact method to be overided

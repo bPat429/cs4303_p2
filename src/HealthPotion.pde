@@ -2,18 +2,18 @@
 class HealthPotion extends Interactable {
     private int item_level;
     private PImage potion_img;
+    static final float spawn_chance = 0.33;
 
  HealthPotion(int tile_size, int x_pos, int y_pos, int item_level) {
     super(tile_size, x_pos, y_pos);
     this.item_level = item_level;
     super.type = 1;
-    // super.interact_radius = 1;
     this.potion_img = loadImage("HealthPotion.png");
   }
   
   // TODO
-  public void interact() {
-    print("Error, interaction not implemented yet");
+  public boolean interact(Player player) {
+    return player.pickupItem(this);
   }
 
   // Generic draw method to be overided

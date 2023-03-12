@@ -1,10 +1,30 @@
 import java.util.Random;
 
 final class Player extends Entity {
+    private final int MAX_INVENTORY = 5;
+    private int inventory_space = MAX_INVENTORY;
+    private Interactable[] inventory;
 
     Player(int spawn_x, int spawn_y, int tile_size) {
         super(spawn_x, spawn_y, tile_size);
         super.setImage(loadImage("wizard.png"));
+        inventory = new Interactable[MAX_INVENTORY];
+    }
+
+    boolean pickupItem(Interactable new_item) {
+        if (inventory_space == 0) {
+            return false;
+        } else {
+            for (int i = 0; i < MAX_INVENTORY; i++) {
+                if (inventory[i] == null) {
+                    inventory[i] = new_item;
+                    inventory_space = inventory_space -1;
+                    return true;
+                }
+            }
+            print("Error, This shouldn't have happened");
+            return false;
+        }
     }
 
     void handleInput(boolean[] input_array, float frame_duration) {

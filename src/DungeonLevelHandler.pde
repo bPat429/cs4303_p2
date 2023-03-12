@@ -129,7 +129,9 @@ final class DungeonLevelHandler {
                     draw();
                     return;
                 } else {
-                    level_interactables.get(index).interact();
+                    if (level_interactables.get(index).interact(player)) {
+                        level_interactables.remove(index);
+                    };
                 }
             }
         }

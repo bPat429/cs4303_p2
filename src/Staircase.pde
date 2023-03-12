@@ -16,9 +16,9 @@ class Staircase extends Interactable {
     return false;
   }
   
-  // TODO
-  public void interact() {
-    print("Error, interaction not implemented yet");
+  // The functionality of the staircase is implemented in the DungeonLevelHandler
+  public boolean interact() {
+    return false;
   }
 
   // Generic draw method to be overided

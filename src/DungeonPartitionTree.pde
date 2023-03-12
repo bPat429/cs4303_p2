@@ -249,7 +249,7 @@ public class DungeonPartitionTree {
             int item_level;
             int[] item_location;
             // Try to spawn a healing potion
-            if (rand.nextInt(4) == 0) {
+            if (rand.nextFloat() <= HealthPotion.spawn_chance) {
                 item_level = rand.nextInt(4);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand);
                 level_interactables.add(new HealthPotion(tile_size, item_location[0], item_location[1], item_level));
