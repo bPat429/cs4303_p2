@@ -84,6 +84,6 @@ final class InventoryHandler {
         fill(0);
         textSize(small_step * 2);
         text("HP: " + Integer.toString(player.getHealth()) + "/" + Integer.toString(player.maxHealth()), inventory_square_spacing + small_step * 2, y_offset + small_step * 3);
-        //text("Level:", inventory_square_spacing + small_step * 2, y_offset + small_step * 3);
+        text("Level: " + Integer.toString(player.getLevel()), displayWidth - 2 * inventory_square_size, y_offset + small_step * 3);
     }
 }

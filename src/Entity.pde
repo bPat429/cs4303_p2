@@ -53,6 +53,10 @@ public class Entity {
         this.type = type;
     }
 
+    int getLevel() {
+        return level;
+    }
+
     int getHealth() {
         return current_health;
     }
