@@ -30,8 +30,8 @@ final class Player extends Entity {
         return intelligence() * (base_damage + weapon_modifier) * (spell_modifier/100);
     }
 
-    Player(int tile_size) {
-        super(0, 0, tile_size, 1, "player");
+    Player() {
+        super(0, 0, 1, "player");
         super.setImage(loadImage("wizard.png"));
         inventory = new Interactable[MAX_INVENTORY];
         base_intelligence = 5;

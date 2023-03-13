@@ -258,6 +258,28 @@ public class DungeonPartitionTree {
 
             // Try to spawn a spell
             
+        }
+
+    }
+
+    // zone_type is used to pass the area type to all children in a tree, this allows creating different zones in the level
+    void spawnMonsters(int[][] level_tile_map, ArrayList<Monster> monsters, int dungeon_level, Random rand, int zone_type) {
+        if (l_child != null && r_child != null) {
+            l_child.spawnMonsters(level_tile_map, monsters, dungeon_level, rand, zone_type);
+            r_child.spawnMonsters(level_tile_map, monsters, dungeon_level, rand, zone_type);
+        } else {
+            int monster_level;
+            int[] monster_spawn_location;
+            // Try to spawn a kobold
+            if (rand.nextFloat() <= Kobold.spawn_chance) {
+                monster_level = rand.nextInt(4) + dungeon_level - 2;
+                monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand);
+                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], monster_level));
+            }
+            // Try to spawn an equippable item
+
+            // Try to spawn a spell
+            
             // Try to spawn a monster
             // TODO add the root of this region to the monster for their territory
             // TODO implement territories

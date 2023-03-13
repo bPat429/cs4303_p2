@@ -14,6 +14,7 @@ final class DungeonLevelHandler {
     private Random rand;
     private Player player;
     private ArrayList<Interactable> level_interactables;
+    private ArrayList<Monster> monsters;
     // A cooldown used to avoid unnecessarily repeating the search action due to high framerate
     private float search_cooldown;
 
@@ -43,6 +44,7 @@ final class DungeonLevelHandler {
     // Generate the dungeon level
     int[] generateLevel() {
         level_interactables = new ArrayList<Interactable>();
+        monsters = new ArrayList<Monster>();
         // Increase dungeon size every level
         dungeon_size = dungeon_size + depth * dungeon_dimension_step;
         // Default value is 0
@@ -58,6 +60,7 @@ final class DungeonLevelHandler {
         level_interactables.add(new Staircase(entry_staircase_pos[0], entry_staircase_pos[1], false));
         level_interactables.add(new Staircase(exit_staircase_pos[0], exit_staircase_pos[1], true));
         partition_tree.spawnItems(level_tile_map, level_interactables, rand, 0);
+        partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
         return entry_staircase_pos;
         //printLevel();
     }
@@ -169,8 +172,14 @@ final class DungeonLevelHandler {
                 level_interactables.get(i).draw(tile_size);
             }
         }
+        // Draw all monsters
+        for (int i = 0; i < monsters.size(); i++) {
+            if (monsters.get(i) != null) {
+                monsters.get(i).draw(tile_size);
+            }
+        }
         // Draw the player
-        player.draw();
+        player.draw(tile_size);
         popMatrix();
     }
 }

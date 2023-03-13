@@ -32,7 +32,7 @@ boolean show_inventory = false;
 void setup() {
     fullScreen();
     rand = new Random();
-    player = new Player(tile_size);
+    player = new Player();
     dungeon_handler = new DungeonLevelHandler(tile_size, dungeon_dimension_step, dungeon_size, rand, player);
     inventory_handler = new InventoryHandler(player);
 }

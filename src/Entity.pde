@@ -2,7 +2,6 @@
 public class Entity {
     // Use a float to allow the player to move in smaller increments without needing to 'step' across tiles.
     private PVector location;
-    private int tile_size;
     private PImage entity_image;
     // Interact radius used to tune the size of the entity
     private float interact_radius;
@@ -40,9 +39,8 @@ public class Entity {
 
     private String type;
 
-    Entity(int spawn_x, int spawn_y, int tile_size, int level, String type) {
+    Entity(int spawn_x, int spawn_y, int level, String type) {
         this.location = new PVector(spawn_x, spawn_y);
-        this.tile_size = tile_size;
         this.orientation = 0;
         this.movement_vector = new PVector(0, 0);
         this.interact_radius = 0.25;
@@ -63,6 +61,10 @@ public class Entity {
 
     PVector getLocation() {
         return location;
+    }
+
+    int[] getTileLocation() {
+        return new int[]{Math.round(location.x), Math.round(location.y)};
     }
 
     void setLocation(int x, int y) {
@@ -164,7 +166,7 @@ public class Entity {
     void handleWallCollisions(int[][] level_tile_map) {
         // Check for any walls the character is penetrating, then resolve penetration by moving them back along the direction of travel
         // The character's location, rounded to the nearest integer corresponds to the current tile.
-        int[] closest_tile = new int[]{Math.round(location.x), Math.round(location.y)};
+        int[] closest_tile = this.getTileLocation();
         // Check each of the tiles adjacent to the closest tile for walls and penetration
         for (int x = closest_tile[0] - 1; x <= closest_tile[0] + 1; x ++) {
             if (x >= 0 && x < level_tile_map.length) {
@@ -211,7 +213,7 @@ public class Entity {
         }
     }
 
-    public void draw() {
+    public void draw(int tile_size) {
         // TODO fix this
         float entity_x = tile_size * location.x;
         float entity_y = tile_size * location.y;
