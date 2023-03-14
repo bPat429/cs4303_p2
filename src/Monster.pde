@@ -11,6 +11,7 @@ class Monster extends Entity {
     int calculateDamage() {
         return strength() * base_damage;
     }
+    private float base_speed;
 
     // Detection radius (in tiles) for the monster to sense the player
     int detection_radius = 7;
@@ -32,7 +33,7 @@ class Monster extends Entity {
 
     Monster(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level, String type) {
         super(spawn_x, spawn_y, level, type);
-        super.entity_speed = 2;
+        base_speed = super.entity_speed;
         // The monster should normally be hunting the player, except for when looking for reinforcements
         hunting_the_player = true;
         // The subtree containing the monster's territory. This is used to find where the monster may roam when idle
@@ -57,6 +58,7 @@ class Monster extends Entity {
     }
 
     void updatePlayerPath(int[][] level_tile_map) {
+        super.entity_speed = base_speed;
         if (current_path == null
             || current_path[current_path.length - 1][0] != last_player_position[0]
             || current_path[current_path.length - 1][1] != last_player_position[1]) {
@@ -67,15 +69,11 @@ class Monster extends Entity {
     }
 
     void updateRoamPath(int[][] level_tile_map, Random rand) {
+        super.entity_speed = base_speed / 4;
         // Get a random position from one of the rooms in this monster's territory
         int[] roam_goal = home_territory.getRandomPos(level_tile_map, rand);
-        if (current_path == null
-            || current_path[current_path.length - 1][0] != last_player_position[0]
-            || current_path[current_path.length - 1][1] != last_player_position[1]) {
-                hunting_the_player = true;
-                // A new path is needed
-                current_path = navigateAStar(level_tile_map, last_player_position);
-        }
+        // A new path is needed
+        current_path = navigateAStar(level_tile_map, roam_goal);
     }
 
     // Default AI decision procedure
@@ -123,6 +121,11 @@ class Monster extends Entity {
             // First check if the goal is very close, if so pursue directly
             // This causes more organic pathing, but can't be too far to avoid the monster getting stuck on a wall
             if (Math.abs(chase_goal_x) + Math.abs(chase_goal_y) < 2) {
+                if (Math.abs(chase_goal_x) + Math.abs(chase_goal_y) < 0.1) {
+                    // Close enough, we can end the path
+                    current_path = null;
+                    return;
+                }
                 // Use kinematic motion for movement
                 super.movement_vector.set(chase_goal_x, chase_goal_y);
                 super.moveEntity(frame_duration);
@@ -229,5 +232,14 @@ class Monster extends Entity {
         return new_path;
     }
 
-    // TODO collide with the player
+    // check collision with player
+    void checkPlayerEncounter(ArrayList<Monster> combat_queue, Player player) {
+        PVector player_location = player.getLocation();
+        float d = this.getDistance(player);
+        float sum_radius = this.getInteractRadius() + player.getInteractRadius();
+        // Make it easier to collide with the player
+        if (sum_radius + 0.25 >= d) {
+            combat_queue.add(this);
+        }
+    }
 }

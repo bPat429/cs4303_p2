@@ -1,7 +1,7 @@
 // Goblin type monster
 class Kobold extends Monster {
     static final float spawn_chance = 0.33;
-    private float alert_cooldown = 0;
+    private float alert_cooldown = -10000;
     private float pack_behaviour_cooldown = 0;
     private int[] last_pack_position;
 
@@ -31,7 +31,7 @@ class Kobold extends Monster {
         // We know that the player is detected and close
         detectPlayer(player);
         // Added a pack behaviour cooldown to avoid monsters appearing too indecisive
-        if (millis() - pack_behaviour_cooldown > 1000) {
+        if (millis() - pack_behaviour_cooldown > 500) {
             boolean alert_sounded = false;
             boolean kobold_nearby = false;
             boolean kobold_distant = false;
@@ -40,11 +40,10 @@ class Kobold extends Monster {
                 Monster current_nearby_monster = monsters.get(i);
                 if (current_nearby_monster != this && current_nearby_monster.getType() == "Kobold") {
                     // Check if the other kobold is in range
-                    if (this.getDistance(current_nearby_monster) < 100) {
-                        print("n");
-                        if (millis() - alert_cooldown > 100) {
+                    if (this.getDistance(current_nearby_monster) < 30) {
+                        // Assert a cooldown of 10 seconds
+                        if (millis() - alert_cooldown > 10000) {
                             current_nearby_monster.alertMonster(last_player_position);
-                            print("Kobold alerted\n");
                             alert_sounded = true;
                         }
                         if (!kobold_nearby && this.getDistance(current_nearby_monster) < 5) {

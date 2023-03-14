@@ -115,7 +115,7 @@ final class DungeonLevelHandler {
     }
 
     // Main method used to run the gameloop while the player is exploring a dungeon level.
-    void run(boolean[] input_array, float frame_duration) {
+    void run(ArrayList<Monster> combat_queue, boolean[] input_array, float frame_duration) {
         // Handle character Movement
         player.handleInput(input_array, frame_duration);
         player.handleWallCollisions(level_tile_map);
@@ -144,10 +144,17 @@ final class DungeonLevelHandler {
             if (current_monster != null) {
                 current_monster.plan(level_tile_map, player, monsters, rand, frame_duration);
                 current_monster.handleWallCollisions(level_tile_map);
+                current_monster.checkPlayerEncounter(combat_queue, player);
             }
         }
         // draw level
         drawComponent();
+        // If a monster is in combat with the player remove them from the dungeon monsters list
+        for (int i = 0; i < combat_queue.size(); i++) {
+            if (combat_queue.get(i) != null) {
+                monsters.remove(combat_queue.get(i));
+            }
+        }
     }
 
     void drawComponent() {

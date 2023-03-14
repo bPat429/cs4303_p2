@@ -1,5 +1,5 @@
-
 import java.util.Random;
+import java.util.ArrayList;
 
 final int   tile_size = 25,
             dungeon_dimension_step = 1,
@@ -7,6 +7,7 @@ final int   tile_size = 25,
 
 DungeonLevelHandler dungeon_handler;
 InventoryHandler inventory_handler;
+CombatHandler combat_handler;
 // Use game_state to select which screen we want to display
 // 0 = Start screen
 // 1 = Dungeon screen
@@ -21,6 +22,9 @@ float frame_duration;
 // Add a cooldown to the inventory toggle to avoid spamming
 float inventory_cooldown;
 Player player;
+// Create an array list to use as a queue for all monsters encountered within one frame of running DungeonLevelHandler
+// If the list is populated then resolve them one by one in the CombatHandler until the list is empty and combat is finished.
+private ArrayList<Monster> combat_queue;
 
 // Array of Booleans used to track user inputs
 // corresponding to:
@@ -35,6 +39,8 @@ void setup() {
     player = new Player();
     dungeon_handler = new DungeonLevelHandler(tile_size, dungeon_dimension_step, dungeon_size, rand, player);
     inventory_handler = new InventoryHandler(player);
+    combat_handler = new CombatHandler(player);
+    combat_queue = new ArrayList<Monster>();
 }
 
 void enterDungeonScreen() {
@@ -50,13 +56,22 @@ void draw() {
             enterDungeonScreen();
             break;
         case 1:
-            frame_duration = (millis() - prev_frame_millis)/1000;
-            dungeon_handler.run(input_array, frame_duration);
-            break;
+            if (combat_queue.size() > 0) {
+                game_state = 3;
+            } else {
+                frame_duration = (millis() - prev_frame_millis)/1000;
+                dungeon_handler.run(combat_queue, input_array, frame_duration);
+                break;
+            }
         case 2:
             inventory_handler.run(input_array);
             break;
         case 3:
+            if (combat_queue.size() > 0) {
+                combat_handler.run(combat_queue);
+            } else {
+                game_state = 1;
+            }
             break;
         default:
             // Default to main menu

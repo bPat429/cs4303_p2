@@ -186,7 +186,7 @@ public class DungeonPartitionTree {
     }
 
     // Try to find an unoccupied space in a room
-    int[] getRandomUnoccupiedSpace(int[][] level_tile_map, Random rand) {
+    int[] getRandomUnoccupiedSpace(int[][] level_tile_map, Random rand, boolean fill_space) {
         int empty_spaces = 0;
         for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
             for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
@@ -205,8 +205,10 @@ public class DungeonPartitionTree {
                         if (space > 1) {
                             space--;
                         } else {
-                            // Mark point as occupied on the level_tile_map
-                            level_tile_map[x][y] = 3;
+                            if (fill_space) {
+                                // Mark point as occupied on the level_tile_map
+                                level_tile_map[x][y] = 3;
+                            }
                             return new int[]{x, y};
                         }
                     }
@@ -223,37 +225,15 @@ public class DungeonPartitionTree {
 
     // Todo check for children and recursively run
     int[] getRandomPos(int[][] level_tile_map, Random rand) {
-        int empty_spaces = 0;
-        for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
-            for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
-                if (level_tile_map[x][y] == 1) {
-                    empty_spaces++;
-                }
+        if (l_child != null && r_child != null) {
+            if (rand.nextInt(2) == 0) {
+                return l_child.getRandomPos(level_tile_map, rand);
+            } else {
+                return r_child.getRandomPos(level_tile_map, rand);
             }
-        }
-        if (empty_spaces == 0) {
-            return null;
         } else {
-            int space = rand.nextInt(empty_spaces);
-            for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
-                for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
-                    if (level_tile_map[x][y] == 1) {
-                        if (space > 1) {
-                            space--;
-                        } else {
-                            // Mark point as occupied on the level_tile_map
-                            level_tile_map[x][y] = 3;
-                            return new int[]{x, y};
-                        }
-                    }
-                }
-            }
-            print("Error, this shouldn't have happened");
-            print("\n");
-            print(empty_spaces);
-            print("\n");
-            print(space);
-            return null;
+            // Choose an unoccupied point in the room
+            return getRandomUnoccupiedSpace(level_tile_map, rand, false);
         }
     }
 
@@ -268,7 +248,7 @@ public class DungeonPartitionTree {
             }
         } else {
             // Choose an unoccupied point in the room
-            return getRandomUnoccupiedSpace(level_tile_map, rand);
+            return getRandomUnoccupiedSpace(level_tile_map, rand, true);
         }
     }
 
@@ -287,7 +267,7 @@ public class DungeonPartitionTree {
             // Try to spawn a healing potion
             if (rand.nextFloat() <= HealthPotion.spawn_chance) {
                 item_level = rand.nextInt(4);
-                item_location = getRandomUnoccupiedSpace(level_tile_map, rand);
+                item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
             // Try to spawn an equippable item
@@ -309,7 +289,7 @@ public class DungeonPartitionTree {
             // Try to spawn a kobold
             if (rand.nextFloat() <= Kobold.spawn_chance) {
                 monster_level = rand.nextInt(4) + dungeon_level - 2;
-                monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand);
+                monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
                 monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], this, monster_level));
             }
             // Try to spawn an equippable item

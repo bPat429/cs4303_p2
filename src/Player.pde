@@ -33,6 +33,7 @@ final class Player extends Entity {
     Player() {
         super(0, 0, 1, "player");
         super.setImage(loadImage("wizard.png"));
+        super.entity_speed = super.entity_speed * 1.5;
         inventory = new Interactable[MAX_INVENTORY];
         base_intelligence = 5;
     }
