@@ -10,7 +10,7 @@ public class Entity {
     // Rotation speed
     final float rotation_const;
     // Entity speed
-    private final float entity_speed;
+    private float entity_speed;
     // 2D movement vector, movement_vector[0] = x axis, movement_vector[1] = y axis
     private PVector movement_vector;
 
@@ -63,6 +63,10 @@ public class Entity {
         return location;
     }
 
+    int[] getDisplayTileLocation() {
+        return new int[]{Math.round(location.x - 0.5), Math.round(location.y - 0.5)};
+    }
+    
     int[] getTileLocation() {
         return new int[]{Math.round(location.x), Math.round(location.y)};
     }
@@ -213,7 +217,7 @@ public class Entity {
         }
     }
 
-    public void draw(int tile_size) {
+    public void drawComponent(int tile_size) {
         // TODO fix this
         float entity_x = tile_size * location.x;
         float entity_y = tile_size * location.y;

@@ -22,7 +22,7 @@ class Staircase extends Interactable {
   }
 
   // Generic draw method to be overided
-  void draw(int tile_size) {
+  void drawComponent(int tile_size) {
     if (is_down) {
       fill(255, 0, 0);
     } else {

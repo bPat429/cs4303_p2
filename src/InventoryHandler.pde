@@ -48,10 +48,10 @@ final class InventoryHandler {
                 player.useItem(selected_slot);
             }
         }
-        draw();
+        drawComponent();
     }
 
-    void draw() {
+    void drawComponent() {
         background(58,33,16);
         for (int j = 0; j < player.MAX_INVENTORY / 5; j++) {
             for (int i = 0; i < 5; i++) {

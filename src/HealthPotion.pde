@@ -16,7 +16,7 @@ class HealthPotion extends Interactable {
   }
 
   // Generic draw method to be overided
-  void draw(int tile_size) {
+  void drawComponent(int tile_size) {
     image(super.item_image, tile_size * super.location[0], tile_size * super.location[1], tile_size , tile_size);
   }
 }

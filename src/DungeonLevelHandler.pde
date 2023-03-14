@@ -61,8 +61,11 @@ final class DungeonLevelHandler {
         level_interactables.add(new Staircase(exit_staircase_pos[0], exit_staircase_pos[1], true));
         partition_tree.spawnItems(level_tile_map, level_interactables, rand, 0);
         partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
+        // Force at least {depth} monsters to spawn
+        while(monsters.size() < depth) {
+            partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
+        }
         return entry_staircase_pos;
-        //printLevel();
     }
 
     void generateNextLevel() {
@@ -126,7 +129,7 @@ final class DungeonLevelHandler {
                 if (index == 1) {
                     // Handle interacting with the down staircase
                     generateNextLevel();
-                    draw();
+                    drawComponent();
                     return;
                 } else {
                     if (level_interactables.get(index).interact(player)) {
@@ -135,14 +138,19 @@ final class DungeonLevelHandler {
                 }
             }
         }
-        // Get Monster goal locations
-        // Calculate Monster pathfinding
-        // Move monsters
+        // Get Monster goal locations, Calculate Monster pathfinding, Move monsters
+        for (int i = 0; i < monsters.size(); i++) {
+            Monster current_monster = monsters.get(i);
+            if (current_monster != null) {
+                current_monster.plan(level_tile_map, player, frame_duration);
+                current_monster.handleWallCollisions(level_tile_map);
+            }
+        }
         // draw level
-        draw();
+        drawComponent();
     }
 
-    void draw() {
+    void drawComponent() {
         pushMatrix();
         PVector player_location = player.getLocation();
         translate((displayWidth/2) - tile_size * player_location.x, (displayHeight/2) - tile_size * player_location.y);
@@ -169,17 +177,17 @@ final class DungeonLevelHandler {
         // Draw all interactables
         for (int i = 0; i < level_interactables.size(); i++) {
             if (level_interactables.get(i) != null) {
-                level_interactables.get(i).draw(tile_size);
+                level_interactables.get(i).drawComponent(tile_size);
             }
         }
         // Draw all monsters
         for (int i = 0; i < monsters.size(); i++) {
             if (monsters.get(i) != null) {
-                monsters.get(i).draw(tile_size);
+                monsters.get(i).drawComponent(tile_size);
             }
         }
         // Draw the player
-        player.draw(tile_size);
+        player.drawComponent(tile_size);
         popMatrix();
     }
 }

@@ -58,7 +58,7 @@ class Interactable {
   }
 
   // Generic draw method to be overided
-  void draw(int tile_size) {
+  void drawComponent(int tile_size) {
     fill(0, 255, 0);
     rect(location[0] * tile_size, location[1] * tile_size, tile_size, tile_size);
   }
