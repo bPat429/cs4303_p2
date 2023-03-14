@@ -63,6 +63,10 @@ public class Entity {
         return current_health;
     }
 
+    void setHealth(int new_health) {
+        current_health = new_health;
+    }
+
     PVector getLocation() {
         return location;
     }

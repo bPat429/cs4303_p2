@@ -10,6 +10,7 @@ final class InventoryHandler {
     private int selected_option;
     private PImage use_label;
     private PImage drop_label;
+    private PImage equipped_label;
     // Slow down rate of inputs
     private float input_cooldown;
 
@@ -19,6 +20,7 @@ final class InventoryHandler {
         selected_option = 0;
         use_label = loadImage("use.png");
         drop_label = loadImage("drop.png");
+        equipped_label = loadImage("equipped.png");
     }
 
     void run(boolean[] input_array) {
@@ -53,6 +55,7 @@ final class InventoryHandler {
 
     void drawComponent() {
         background(58,33,16);
+        int small_step = displayWidth/100;
         for (int j = 0; j < player.MAX_INVENTORY / 5; j++) {
             for (int i = 0; i < 5; i++) {
                 int x_pos = inventory_square_spacing * i + inventory_square_size * i + left_offset;
@@ -63,6 +66,14 @@ final class InventoryHandler {
                     PImage item_image = player.getInventory()[i + 5 * j].getImage();
                     if (item_image != null) {
                         image(item_image, x_pos, y_pos, inventory_square_size , inventory_square_size);
+                        if (player.isWearing(i + 5 * j)) {
+                            tint(255, 175);
+                            image(equipped_label, x_pos + small_step, y_pos + small_step/2, small_step * 8, small_step * 8);
+                            tint(255, 255);
+                        }
+                        fill(0);
+                        textSize(small_step * 2);
+                        text("Rank: " + Integer.toString(player.getInventory()[i + 5 * j].getRank()), x_pos + small_step, y_pos + inventory_square_size - small_step);
                     }
                 }
                 if (selected_slot == i + 5 * j) {
@@ -74,7 +85,6 @@ final class InventoryHandler {
         }
         // Use bottom of the screen to show player health and readme messages
         int y_offset = inventory_square_spacing + (inventory_square_spacing + inventory_square_size) * player.MAX_INVENTORY / 5;
-        int small_step = displayWidth/100;
         // Display current health
         fill(100, 0, 0);
         rect(inventory_square_spacing, y_offset, displayWidth * 2/3, displayWidth/20);

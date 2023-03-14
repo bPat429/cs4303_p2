@@ -9,12 +9,14 @@ class Interactable {
   // 3 = staircase
   private int type;
   private PImage item_image;
+  private int rank;
   // Radius used to tune how far the player may be and still interact
   private float interact_radius;
   static final float spawn_chance = 0.1;
 
-  Interactable(int x_pos, int y_pos) {
+  Interactable(int x_pos, int y_pos, int rank) {
     this.location = new int[]{x_pos, y_pos};
+    this.rank = rank;
     // Set default interact_radius to slightly smaller than a tile
     this.interact_radius = 0.4;
   }
@@ -25,6 +27,10 @@ class Interactable {
 
   int getType() {
     return type;
+  }
+
+  int getRank() {
+    return rank;
   }
 
   int[] getLocation() {
@@ -53,8 +59,10 @@ class Interactable {
 
   // Generic interact method to be overided
   // This represents interacting with the object while in the inventory screen
-  public void use(Player player) {
+  // Return true if consumable
+  public boolean use(Player player) {
     print("Error, use not implemented yet");
+    return false;
   }
 
   // Generic draw method to be overided

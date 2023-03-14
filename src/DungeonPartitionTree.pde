@@ -275,12 +275,31 @@ public class DungeonPartitionTree {
             int[] item_location;
             // Try to spawn a healing potion
             if (rand.nextFloat() <= HealthPotion.spawn_chance) {
-                item_level = rand.nextInt(4);
+                item_level = rand.nextInt(4) + 1;
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
             // Try to spawn an equippable item
-
+            // TODO set probability
+            if (rand.nextFloat() <= 1) {
+                // Choose item type
+                float choice = rand.nextFloat();
+                if (choice <= 0.33) {
+                    item_level = rand.nextInt(4) + 1;
+                    item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
+                    level_interactables.add(new WizardHat(item_location[0], item_location[1], item_level));
+                } else if (choice <= 0.33) {
+                    // TODO
+                    item_level = rand.nextInt(4) + 1;
+                    item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
+                    level_interactables.add(new WizardHat(item_location[0], item_location[1], item_level));
+                } else if (choice <= 0.33) {
+                    // TODO
+                    item_level = rand.nextInt(4) + 1;
+                    item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
+                    level_interactables.add(new WizardHat(item_location[0], item_location[1], item_level));
+                }
+            }
             // Try to spawn a spell
             
         }

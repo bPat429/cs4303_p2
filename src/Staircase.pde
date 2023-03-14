@@ -3,7 +3,7 @@ class Staircase extends Interactable {
   private boolean is_down;
 
   Staircase(int x_pos, int y_pos, boolean is_down) {
-    super(x_pos, y_pos);
+    super(x_pos, y_pos, 0);
     this.is_down = is_down;
     super.type = 3;
   }
