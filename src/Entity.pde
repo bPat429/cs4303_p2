@@ -32,8 +32,10 @@ public class Entity {
         return 100 + constitution() * level;
     }
     // Dodge chance calculated from dexterity and level, between 0 and 1
-    double dodge_chance(int enemy_dex, int enemy_level) {
-        return Math.tanh((dexterity() * level) - (enemy_dex * enemy_level));
+    float dodge_chance(int enemy_dex, int enemy_level) {
+        float dodge_diff = ((dexterity() * level) - (enemy_dex * enemy_level))/100;
+        dodge_diff = (dodge_diff > 0.1) ? dodge_diff : 0.1;
+        return (float) Math.tanh(dodge_diff);
     }
     // We also have strength, reserved for monsters, and intelligence which is reserved for the player
 
@@ -55,6 +57,10 @@ public class Entity {
         return level;
     }
 
+    void setLevel(int new_level) {
+        level = new_level;
+    }
+
     String getType() {
         return type;
     }
@@ -65,6 +71,7 @@ public class Entity {
 
     void setHealth(int new_health) {
         current_health = new_health;
+        current_health = (current_health < 0) ? 0 : current_health;
     }
 
     PVector getLocation() {
@@ -98,6 +105,10 @@ public class Entity {
 
     void setImage(PImage image) {
         this.entity_image = image;
+    }
+
+    PImage getImage() {
+        return this.entity_image;
     }
 
     void rotateEntity(float rotation) {
@@ -231,7 +242,6 @@ public class Entity {
     }
 
     public void drawComponent(int tile_size) {
-        // TODO fix this
         float entity_x = tile_size * location.x;
         float entity_y = tile_size * location.y;
         pushMatrix();

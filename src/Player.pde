@@ -7,6 +7,9 @@ final class Player extends Entity {
     // Indexes of all equipped items
     // index: 0 = head, 1 = chest, 2 = weapon
     private int[] equipped_items;
+    private Spell[] known_spells;
+    private int spells_collected;
+    private int experience;
 
     // External stat modifiers, all initialise to 0:
     private int con_modifier;
@@ -31,8 +34,15 @@ final class Player extends Entity {
 
     // Calculate damage for the player's attack
     // spell_modifier is a % value
-    int calculateDamage(int spell_modifier) {
-        return intelligence() * (base_damage + weapon_modifier) * (spell_modifier/100);
+    int calculateDamage(float spell_modifier) {
+        print("Damage\n");
+        print(intelligence());
+        print("\n");
+        print((base_damage + weapon_modifier));
+        print("\n");
+        print((spell_modifier/100));
+        print("\n");
+        return (int) (intelligence() * (base_damage + weapon_modifier) * (spell_modifier/100));
     }
 
     Player() {
@@ -41,12 +51,32 @@ final class Player extends Entity {
         super.entity_speed = super.entity_speed * 1.5;
         inventory = new Interactable[MAX_INVENTORY];
         base_intelligence = 5;
-        this.setHealth(1);
         equipped_items = new int[]{-1, -1, -1};
+        // Teach the player a basic firebolt spell
+        known_spells = new Spell[4];
+        this.addSpell(new Firebolt(0, 0, 1));
+    }
+
+    void addExperience(int exp) {
+        experience = experience + exp;
+        if (experience >= this.getLevel() * 5) {
+            experience = 0;
+            this.setLevel(this.getLevel() + 1);
+        }
+    }
+
+    void addSpell(Interactable new_spell) {
+        // Use spells_collected to find the next slot we should replace
+        known_spells[spells_collected % 4] = (Spell) new_spell;
+        spells_collected++;
     }
 
     boolean pickupItem(Interactable new_item) {
-        if (inventory_space == 0) {
+        if (new_item.getType() == 2) {
+            // The item is a spell, learn it
+            addSpell(new_item);
+            return true;
+        } else if (inventory_space == 0) {
             return false;
         } else {
             for (int i = 0; i < MAX_INVENTORY; i++) {
@@ -89,19 +119,21 @@ final class Player extends Entity {
     }
 
     void useItem(int item_index) {
-        // Check if the item is equippable
-        if (inventory[item_index].getType() == 0) {
-            Equipment equipment = (Equipment) inventory[item_index];
-            if (item_index == equipped_items[equipment.get_equipment_type()]) {
-                unequip(item_index);
-            } else {
-                // Equip the item and apply the stat modifier changes
-                equipment.applyBuffs(this);
-                equipped_items[equipment.get_equipment_type()] = item_index;
+        if (inventory[item_index] != null) {
+            // Check if the item is equippable
+            if (inventory[item_index].getType() == 0) {
+                Equipment equipment = (Equipment) inventory[item_index];
+                if (item_index == equipped_items[equipment.get_equipment_type()]) {
+                    unequip(item_index);
+                } else {
+                    // Equip the item and apply the stat modifier changes
+                    equipment.applyBuffs(this);
+                    equipped_items[equipment.get_equipment_type()] = item_index;
+                }
             }
-        }
-        if (inventory[item_index].use(this)) {
-            inventory[item_index] = null;
+            if (inventory[item_index].use(this)) {
+                inventory[item_index] = null;
+            } 
         }
     }
 
@@ -138,8 +170,50 @@ final class Player extends Entity {
         this.con_modifier = this.con_modifier - val;
     }
 
+    void addWeaponMod(int val) {
+        this.weapon_modifier = this.weapon_modifier + val;
+    }
+
+    void removeWeaponMod(int val) {
+        this.weapon_modifier = this.weapon_modifier - val;
+    }
+
     Interactable[] getInventory() {
         return inventory;
+    }
+
+    String getSpellName(int spell_index) {
+        if (known_spells[spell_index] != null) {
+            return known_spells[spell_index].getSpellName() + " rank " + Integer.toString(known_spells[spell_index].getRank());
+        }
+        return null;
+    }
+
+    PImage getSpellImage(int spell_index) {
+        if (known_spells[spell_index] != null) {
+            return known_spells[spell_index].getImage();
+        }
+        return null;
+    }
+    
+    // Reset spell cooldowns, ready for combat
+    void resetSpellCooldowns() {
+        for (int i = 0; i < 4; i++) {
+            if (known_spells[i] != null) {
+                known_spells[i].resetCooldown();
+            }
+        }
+    }
+
+    // Sets spell cooldown and returns damage
+    // Return -1 if the spell index is invalid, or is on cooldown
+    int castSpell(int spell_index, int turn) {
+        if ((known_spells[spell_index] != null) && (known_spells[spell_index].checkCooldown(turn))) {
+            known_spells[spell_index].updateCooldown(turn);
+            int rank = known_spells[spell_index].getRank();
+            return calculateDamage((float) (rank * 75));
+        }
+        return -1;
     }
 
     void handleInput(boolean[] input_array, float frame_duration) {

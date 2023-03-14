@@ -144,7 +144,7 @@ final class DungeonLevelHandler {
             if (current_monster != null) {
                 current_monster.plan(level_tile_map, player, monsters, rand, frame_duration);
                 current_monster.handleWallCollisions(level_tile_map);
-                // current_monster.checkPlayerEncounter(combat_queue, player);
+                current_monster.checkPlayerEncounter(combat_queue, player);
             }
         }
         // draw level

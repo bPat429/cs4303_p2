@@ -50,6 +50,7 @@ void enterDungeonScreen() {
 
 // The gameloop function
 void draw() {
+    // TODO handle character death
     // background(0);
     switch (game_state) {
         case 0:
@@ -68,7 +69,7 @@ void draw() {
             break;
         case 3:
             if (combat_queue.size() > 0) {
-                combat_handler.run(combat_queue, input_array);
+                combat_handler.run(combat_queue, input_array, rand);
             } else {
                 game_state = 1;
             }

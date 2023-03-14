@@ -9,7 +9,7 @@ class Monster extends Entity {
     }
     // Calculate damage for a monster's attack
     int calculateDamage() {
-        return strength() * base_damage;
+        return (strength() * base_damage) / 2;
     }
     private float base_speed;
 
@@ -38,6 +38,10 @@ class Monster extends Entity {
         hunting_the_player = true;
         // The subtree containing the monster's territory. This is used to find where the monster may roam when idle
         this.home_territory = home_territory;
+    }
+
+    int calculateExperience() {
+        return this.getLevel();
     }
 
     // Alert the monster to the player's location
@@ -142,7 +146,6 @@ class Monster extends Entity {
                 && Math.abs(current_path[current_path_index + 1][1] - current_location.y) < 0.1) {
                 // we've moved on to the next tile, update the index
                 current_path_index = current_path_index + 1;
-                // TODO check if we've somehow gone off the path
             }
             if (current_path_index < current_path.length - 1) {
                 // Get the movements we need to take to head to the next tile

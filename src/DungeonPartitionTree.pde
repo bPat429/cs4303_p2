@@ -51,7 +51,6 @@ public class DungeonPartitionTree {
     void partitionWidth(int min_height, int min_width, Random rand) {
         if (part_width >= min_width * 2 && part_height >= min_height) {
             // Find the range of values which result in a valid split (rooms maintain the min_height/min_width values)
-            // TODO fix this
             int min_split = min_width;
             int max_split = part_width - min_width;
             // This is the offset of the start of the second partition
@@ -232,7 +231,6 @@ public class DungeonPartitionTree {
         }
     }
 
-    // Todo check for children and recursively run
     int[] getRandomPos(int[][] level_tile_map, Random rand) {
         if (l_child != null && r_child != null) {
             if (rand.nextInt(2) == 0) {
@@ -280,8 +278,7 @@ public class DungeonPartitionTree {
                 level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
             // Try to spawn an equippable item
-            // TODO set probability
-            if (rand.nextFloat() <= 1) {
+            if (rand.nextFloat() <= 0.2) {
                 item_level = rand.nextInt(4) + 1;
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 // Choose item type
@@ -295,6 +292,7 @@ public class DungeonPartitionTree {
                 }
             }
             // Try to spawn a spell
+            // TODO spell spawning
             
         }
 
@@ -314,13 +312,7 @@ public class DungeonPartitionTree {
                 monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
                 monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
             }
-            // Try to spawn an equippable item
-
-            // Try to spawn a spell
-            
-            // Try to spawn a monster
-            // TODO add the root of this region to the monster for their territory
-            // TODO implement territories
+            // TODO multiple kobold spawn
         }
 
     }

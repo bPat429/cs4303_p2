@@ -18,10 +18,12 @@ class WizardStaff extends Equipment {
   // Generic interact method to be overided
   public void applyBuffs(Player player) {
     player.addInt(base_buff * this.getRank());
+    player.addWeaponMod(base_buff * this.getRank());
   }
 
   // Generic interact method to be overided
   public void removeBuffs(Player player) {
     player.removeInt(base_buff * this.getRank());
+    player.removeWeaponMod(base_buff * this.getRank());
   }
 }

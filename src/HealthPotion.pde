@@ -1,6 +1,6 @@
 // Health potion class
 class HealthPotion extends Interactable {
-    static final float spawn_chance = 0.33;
+    static final float spawn_chance = 0.5;
 
  HealthPotion(int x_pos, int y_pos, int item_level) {
     super(x_pos, y_pos, item_level);
