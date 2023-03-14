@@ -22,8 +22,7 @@ class Monster extends Entity {
     // A subtree of the partition tree which contains that monster's home territory
     // While idle the monster will choose a random location from this tree to roam to
     DungeonPartitionTree home_territory;
-    // If this is null create a new roam goal. If last_player_position is not null then ignore this.
-    int[] roam_goal;
+    // If this is null create a new roam path. If last_player_position is not null then ignore this.
     int[][] current_path;
     // Index representing the current position on the path
     int current_path_index;
@@ -31,10 +30,13 @@ class Monster extends Entity {
     boolean hunting_the_player;
     float plan_cooldown;
 
-    Monster(int spawn_x, int spawn_y, int level, String type) {
+    Monster(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level, String type) {
         super(spawn_x, spawn_y, level, type);
         super.entity_speed = 2;
-        hunting_the_player = false;
+        // The monster should normally be hunting the player, except for when looking for reinforcements
+        hunting_the_player = true;
+        // The subtree containing the monster's territory. This is used to find where the monster may roam when idle
+        this.home_territory = home_territory;
     }
 
     // Alert the monster to the player's location
@@ -58,22 +60,42 @@ class Monster extends Entity {
         if (current_path == null
             || current_path[current_path.length - 1][0] != last_player_position[0]
             || current_path[current_path.length - 1][1] != last_player_position[1]) {
+                hunting_the_player = true;
                 // A new path is needed
                 current_path = navigateAStar(level_tile_map, last_player_position);
+        }
+    }
+
+    void updateRoamPath(int[][] level_tile_map, Random rand) {
+        // Get a random position from one of the rooms in this monster's territory
+        int[] roam_goal = home_territory.getRandomPos(level_tile_map, rand);
+        if (current_path == null
+            || current_path[current_path.length - 1][0] != last_player_position[0]
+            || current_path[current_path.length - 1][1] != last_player_position[1]) {
                 hunting_the_player = true;
+                // A new path is needed
+                current_path = navigateAStar(level_tile_map, last_player_position);
         }
     }
 
     // Default AI decision procedure
     // Include the monsters arraylist to allow pack tactics
-    void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, float frame_duration) {
-        if (millis() - plan_cooldown > 100)
+    void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, Random rand, float frame_duration) {
+        // Check if the player is detected
         detectPlayer(player);
-        // If the player has been spotted, and it's been less than 3 seconds pursue.
+        // Pathfinding
+        // Check if the player is nearby, or if we been alerted to the player's position
         if (last_player_position != null && millis() - player_last_seen < 3000) {
-            // Check if we already have a path to that location
+            // If the current path doesn't lead to the player then update the path
             updatePlayerPath(level_tile_map);
+        } else {
+            // If the player is not nearby then complete the current path (to their last known position or a roam goal)(if they've been seen at all)
+            if (current_path == null) {
+                // If the path is null then set a roam goal
+                updateRoamPath(level_tile_map, rand);
+            }
         }
+        // Pursue the goal
         pursueGoal(frame_duration, player);
     }
 
@@ -173,7 +195,7 @@ class Monster extends Entity {
         while(completed_path_node == null) {
             int best_index = getBestNodeInFrontier(frontier);
             // Return the best node if the search limit is reached, or the node has reached the goal
-            if (search_limit > 100 || frontier.get(best_index).isGoal()) {
+            if (search_limit > 1000 || frontier.get(best_index).isGoal()) {
                 completed_path_node = frontier.get(best_index);
             } else {
                 AStarNode[] new_nodes = frontier.get(best_index).exploreNode(level_tile_map, goal_pos);

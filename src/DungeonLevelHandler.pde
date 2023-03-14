@@ -142,7 +142,7 @@ final class DungeonLevelHandler {
         for (int i = 0; i < monsters.size(); i++) {
             Monster current_monster = monsters.get(i);
             if (current_monster != null) {
-                current_monster.plan(level_tile_map, player, monsters, frame_duration);
+                current_monster.plan(level_tile_map, player, monsters, rand, frame_duration);
                 current_monster.handleWallCollisions(level_tile_map);
             }
         }

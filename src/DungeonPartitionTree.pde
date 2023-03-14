@@ -221,6 +221,42 @@ public class DungeonPartitionTree {
         }
     }
 
+    // Todo check for children and recursively run
+    int[] getRandomPos(int[][] level_tile_map, Random rand) {
+        int empty_spaces = 0;
+        for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
+            for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
+                if (level_tile_map[x][y] == 1) {
+                    empty_spaces++;
+                }
+            }
+        }
+        if (empty_spaces == 0) {
+            return null;
+        } else {
+            int space = rand.nextInt(empty_spaces);
+            for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
+                for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
+                    if (level_tile_map[x][y] == 1) {
+                        if (space > 1) {
+                            space--;
+                        } else {
+                            // Mark point as occupied on the level_tile_map
+                            level_tile_map[x][y] = 3;
+                            return new int[]{x, y};
+                        }
+                    }
+                }
+            }
+            print("Error, this shouldn't have happened");
+            print("\n");
+            print(empty_spaces);
+            print("\n");
+            print(space);
+            return null;
+        }
+    }
+
     // Randomly choose between left and right children until a leaf node is found
     // At the leaf choose a random square in the room
     int[] spawnStaircases(int[][] level_tile_map, Random rand) {
@@ -274,7 +310,7 @@ public class DungeonPartitionTree {
             if (rand.nextFloat() <= Kobold.spawn_chance) {
                 monster_level = rand.nextInt(4) + dungeon_level - 2;
                 monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand);
-                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], monster_level));
+                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], this, monster_level));
             }
             // Try to spawn an equippable item
 

@@ -5,8 +5,8 @@ class Kobold extends Monster {
     private float pack_behaviour_cooldown = 0;
     private int[] last_pack_position;
 
-    Kobold(int spawn_x, int spawn_y, int level) {
-        super(spawn_x, spawn_y, level, "Kobold");
+    Kobold(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level) {
+        super(spawn_x, spawn_y, home_territory, level, "Kobold");
         super.setImage(loadImage("kobold.png"));
     }
 
@@ -22,42 +22,36 @@ class Kobold extends Monster {
 
     // Default AI decision procedure
     // Include the monsters arraylist to allow pack tactics
-    void planComplex(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, float frame_duration) {
+    void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, Random rand, float frame_duration) {
         // If the player is far away then run the normal planning procedure
         if (this.getDistance(player) > this.detection_radius) {
-            if (millis() - player_last_seen < 3000) {
-                // We've been alerted, the player has run away or 
-                super.hunting_the_player = true;
-                updatePlayerPath(level_tile_map);
-                pursueGoal(frame_duration, player);
-            } else {
-                super.plan(level_tile_map, player, monsters, frame_duration);
-                return;
-            }
+            super.plan(level_tile_map, player, monsters, rand, frame_duration);
+            return;
         }
+        // We know that the player is detected and close
         detectPlayer(player);
-        // If the player has been spotted, and it's been less than 3 seconds pursue.
         // Added a pack behaviour cooldown to avoid monsters appearing too indecisive
-        if (last_player_position != null && millis() - player_last_seen < 3000 && millis() - pack_behaviour_cooldown > 1000) {
+        if (millis() - pack_behaviour_cooldown > 1000) {
             boolean alert_sounded = false;
             boolean kobold_nearby = false;
             boolean kobold_distant = false;
             // Count the nearby kobolds
             for (int i = 0; i < monsters.size(); i++) {
-                Monster current_monster = monsters.get(i);
-                if (current_monster != this && current_monster.getType() == "Kobold") {
+                Monster current_nearby_monster = monsters.get(i);
+                if (current_nearby_monster != this && current_nearby_monster.getType() == "Kobold") {
                     // Check if the other kobold is in range
-                    if (this.getDistance(current_monster) < 100) {
-                        if (millis() - alert_cooldown < 100) {
-                            current_monster.alertMonster(last_player_position);
-                            print("Kobold alerted");
+                    if (this.getDistance(current_nearby_monster) < 100) {
+                        print("n");
+                        if (millis() - alert_cooldown > 100) {
+                            current_nearby_monster.alertMonster(last_player_position);
+                            print("Kobold alerted\n");
                             alert_sounded = true;
                         }
-                        if (!kobold_nearby && this.getDistance(current_monster) < 5) {
+                        if (!kobold_nearby && this.getDistance(current_nearby_monster) < 5) {
                             kobold_nearby = true;
-                        } else if (!kobold_distant && this.getDistance(current_monster) < 10) {
+                        } else if (!kobold_distant && this.getDistance(current_nearby_monster) < 10) {
                             kobold_distant = true;
-                            last_pack_position = current_monster.getDisplayTileLocation();
+                            last_pack_position = current_nearby_monster.getDisplayTileLocation();
                         }
                     }
                 }
