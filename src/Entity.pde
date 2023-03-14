@@ -55,6 +55,10 @@ public class Entity {
         return level;
     }
 
+    String getType() {
+        return type;
+    }
+
     int getHealth() {
         return current_health;
     }
@@ -63,8 +67,13 @@ public class Entity {
         return location;
     }
 
+    // Get euclidean distance
+    float getDistance(Entity other_entity) {
+        return this.location.dist(other_entity.getLocation());
+    }
+
     int[] getDisplayTileLocation() {
-        return new int[]{Math.round(location.x - 0.5), Math.round(location.y - 0.5)};
+        return new int[]{Math.round(location.x + 0.5), Math.round(location.y + 0.5)};
     }
     
     int[] getTileLocation() {

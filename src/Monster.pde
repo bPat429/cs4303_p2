@@ -13,7 +13,7 @@ class Monster extends Entity {
     }
 
     // Detection radius (in tiles) for the monster to sense the player
-    int detection_radius = 10;
+    int detection_radius = 7;
     // If a monster loses contact with the player then they will head towards
     // the last known position. Set to null after a time limit.
     int[] last_player_position;
@@ -27,33 +27,52 @@ class Monster extends Entity {
     int[][] current_path;
     // Index representing the current position on the path
     int current_path_index;
+    // Boolean used to let monsters opt-out of chasing the player
+    boolean hunting_the_player;
+    float plan_cooldown;
 
     Monster(int spawn_x, int spawn_y, int level, String type) {
         super(spawn_x, spawn_y, level, type);
         super.entity_speed = 2;
+        hunting_the_player = false;
+    }
+
+    // Alert the monster to the player's location
+    void alertMonster(int[] player_position) {
+        last_player_position = player_position;
+        // Give the monster an extra 3 seconds to reach the alert location
+        player_last_seen = millis();
+    }
+
+    void detectPlayer(Player player) {
+        // Check if the monster can see the player
+        // If the monster is within detection_radius blocks then the monster detects the player
+        // Add a cooldown of 0.2 seconds to reduce unnecessary A* search repetition
+        if (this.getDistance(player) < this.detection_radius && millis() - player_last_seen > 200) {
+            last_player_position = player.getDisplayTileLocation();
+            player_last_seen = millis();
+        }
+    }
+
+    void updatePlayerPath(int[][] level_tile_map) {
+        if (current_path == null
+            || current_path[current_path.length - 1][0] != last_player_position[0]
+            || current_path[current_path.length - 1][1] != last_player_position[1]) {
+                // A new path is needed
+                current_path = navigateAStar(level_tile_map, last_player_position);
+                hunting_the_player = true;
+        }
     }
 
     // Default AI decision procedure
-    void plan(int[][] level_tile_map, Player player, float frame_duration) {
-        // Check if the monster can see the player
-        // TODO this is a placeholder method
-        if (last_player_position == null || millis() - player_last_seen > 3000) {
-            last_player_position = player.getDisplayTileLocation();
-        player_last_seen = millis();
-        }
-        
+    // Include the monsters arraylist to allow pack tactics
+    void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, float frame_duration) {
+        if (millis() - plan_cooldown > 100)
+        detectPlayer(player);
         // If the player has been spotted, and it's been less than 3 seconds pursue.
         if (last_player_position != null && millis() - player_last_seen < 3000) {
             // Check if we already have a path to that location
-            if (current_path == null
-                || current_path[current_path.length - 1][0] != last_player_position[0]
-                || current_path[current_path.length - 1][1] != last_player_position[1]) {
-                    // A new path is needed
-                    current_path = navigateAStar(level_tile_map, last_player_position);
-            }
-            // Move the monster along the path
-            // TODO
-
+            updatePlayerPath(level_tile_map);
         }
         pursueGoal(frame_duration, player);
     }
@@ -61,23 +80,36 @@ class Monster extends Entity {
     // Pursue the currently set path. If none is set then do nothing.
     // Note that the A* path uses the tile list as nodes, but the equivalent coordinates point to the corner of the tile rather than the center.
     void pursueGoal(float frame_duration, Player player) {
+        PVector current_location = this.getLocation();
+        // Try to head straight for the player if we are close, otherwise head for the player last seen location, or amble goal
+        if (hunting_the_player && this.getDistance(player) < 2) {
+            // There's an issue where the monster chases the player, but if the player moves away the monster defaults to A* tile based pathing
+            // To circumvent this we clear the old navigation path if we're this close
+            current_path = null;
+            float final_loc_x = player.getLocation().x;
+            float final_loc_y = player.getLocation().y;
+            float chase_goal_x = final_loc_x - current_location.x;
+            float chase_goal_y = final_loc_y - current_location.y;
+            super.movement_vector.set(chase_goal_x, chase_goal_y);
+            super.moveEntity(frame_duration);
+        } else if (current_path != null) {
         // The first node on the path is the current location
-        if (current_path != null) {
-            PVector current_location = this.getLocation();
-            // Try to head straight for the player if we are close, otherwise head for the player last seen location, or amble goal
-            float final_loc_x = (millis() - player_last_seen > 3000) ? current_path[current_path.length - 1][0] : player.getLocation().x;
-            float final_loc_y = (millis() - player_last_seen > 3000) ? current_path[current_path.length - 1][1] : player.getLocation().y;
+            float final_loc_x = current_path[current_path.length - 1][0];
+            float final_loc_y = current_path[current_path.length - 1][1];
             float chase_goal_x = final_loc_x - current_location.x;
             float chase_goal_y = final_loc_y - current_location.y;
             // First check if the goal is very close, if so pursue directly
-            if (Math.abs(chase_goal_x) + Math.abs(chase_goal_y) < 3) {
-                if (Math.abs(chase_goal_x) + Math.abs(chase_goal_y) < 0.1) {
-                    current_path = null;
-                    return;
-                }
+            // This causes more organic pathing, but can't be too far to avoid the monster getting stuck on a wall
+            if (Math.abs(chase_goal_x) + Math.abs(chase_goal_y) < 2) {
                 // Use kinematic motion for movement
                 super.movement_vector.set(chase_goal_x, chase_goal_y);
                 super.moveEntity(frame_duration);
+                return;
+            }
+            // Check if we've reached the end of the current path, this can trigger if we're chasing the player but player isn't close
+            // to the last known position
+            if (current_path_index + 1 == current_path.length) {
+                current_path = null;
                 return;
             }
             // We don't return paths of length 1, so it's safe to do current_path_index + 1 here
@@ -126,6 +158,9 @@ class Monster extends Entity {
     // A star search based navigation
     // Given a goal position try to find a path leading to that position.
     int[][] navigateAStar(int[][] level_tile_map, int[] goal_pos) {
+        if (goal_pos == null) {
+            return null;
+        }
         // The node frontier
         ArrayList<AStarNode> frontier = new ArrayList<AStarNode>();
         // Add the current position to the frontier
@@ -138,7 +173,7 @@ class Monster extends Entity {
         while(completed_path_node == null) {
             int best_index = getBestNodeInFrontier(frontier);
             // Return the best node if the search limit is reached, or the node has reached the goal
-            if (search_limit > 1000 || frontier.get(best_index).isGoal()) {
+            if (search_limit > 100 || frontier.get(best_index).isGoal()) {
                 completed_path_node = frontier.get(best_index);
             } else {
                 AStarNode[] new_nodes = frontier.get(best_index).exploreNode(level_tile_map, goal_pos);

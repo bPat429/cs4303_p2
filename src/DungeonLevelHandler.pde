@@ -62,7 +62,7 @@ final class DungeonLevelHandler {
         partition_tree.spawnItems(level_tile_map, level_interactables, rand, 0);
         partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
         // Force at least {depth} monsters to spawn
-        while(monsters.size() < depth) {
+        while(monsters.size() < depth + 1) {
             partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
         }
         return entry_staircase_pos;
@@ -142,7 +142,7 @@ final class DungeonLevelHandler {
         for (int i = 0; i < monsters.size(); i++) {
             Monster current_monster = monsters.get(i);
             if (current_monster != null) {
-                current_monster.plan(level_tile_map, player, frame_duration);
+                current_monster.plan(level_tile_map, player, monsters, frame_duration);
                 current_monster.handleWallCollisions(level_tile_map);
             }
         }
@@ -151,6 +151,7 @@ final class DungeonLevelHandler {
     }
 
     void drawComponent() {
+        background(125);
         pushMatrix();
         PVector player_location = player.getLocation();
         translate((displayWidth/2) - tile_size * player_location.x, (displayHeight/2) - tile_size * player_location.y);
@@ -169,7 +170,7 @@ final class DungeonLevelHandler {
                         fill(209);
                         break;
                     default:
-                        fill(0);
+                        fill(125);
                 }
                 rect(x * tile_size, y * tile_size, tile_size, tile_size);
             }

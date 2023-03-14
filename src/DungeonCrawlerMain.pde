@@ -1,7 +1,7 @@
 
 import java.util.Random;
 
-final int   tile_size = 50,
+final int   tile_size = 25,
             dungeon_dimension_step = 1,
             dungeon_size = 20;
 
@@ -44,7 +44,7 @@ void enterDungeonScreen() {
 
 // The gameloop function
 void draw() {
-    background(0);
+    // background(0);
     switch (game_state) {
         case 0:
             enterDungeonScreen();

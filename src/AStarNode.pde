@@ -81,8 +81,10 @@ class AStarNode {
                         }
                     } else {
                         // Check we're not out of bounds, and that the tile is accessible
+                        // When passing to the next level an index out of bounds error has occurred here, but not sure why
+                        // Also before the crash the screen became darker and darker
                         if (x >= 0 && y >= 0 && x < level_tile_map.length && y < level_tile_map[x].length
-                            && level_tile_map[x][y] == 1 || level_tile_map[x][y] == 3) {
+                            && (level_tile_map[x][y] == 1 || level_tile_map[x][y] == 3)) {
                             // The movement is not diagonal, and to a valid room space so add the node
                             valid_nodes[i] = new AStarNode(this, new int[]{x, y}, goal_pos);
                         }
