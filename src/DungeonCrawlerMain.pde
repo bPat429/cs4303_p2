@@ -1,7 +1,7 @@
 import java.util.Random;
 import java.util.ArrayList;
 
-final int   tile_size = 25,
+final int   tile_size = 50,
             dungeon_dimension_step = 1,
             dungeon_size = 20;
 
@@ -68,7 +68,7 @@ void draw() {
             break;
         case 3:
             if (combat_queue.size() > 0) {
-                combat_handler.run(combat_queue);
+                combat_handler.run(combat_queue, input_array);
             } else {
                 game_state = 1;
             }

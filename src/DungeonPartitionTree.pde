@@ -12,12 +12,19 @@ public class DungeonPartitionTree {
     private int[] room_tr_corner;
     private DungeonPartitionTree l_child;
     private DungeonPartitionTree r_child;
+    private DungeonPartitionTree territory_root;
+    // Chance of child partitions starting their own territory tree. Lower probability leads to larger monster territories
+    private float TERRITORY_SPLIT_CHANCE = 0.0;
 
     // Create node
-    DungeonPartitionTree(int bottom_left_x, int bottom_left_y, int part_width, int part_height) {
+    DungeonPartitionTree(int bottom_left_x, int bottom_left_y, int part_width, int part_height, DungeonPartitionTree territory_root) {
         this.bottom_left_coordinates = new int[]{bottom_left_x, bottom_left_y};
         this.part_width = part_width;
         this.part_height = part_height;
+        this.territory_root = territory_root;
+        if (this.territory_root == null) {
+            this.territory_root = this;
+        }
     }
 
     int[] getRoomCenter() {
@@ -51,8 +58,9 @@ public class DungeonPartitionTree {
             int split_point = rand.nextInt((max_split - min_split) + 1) + min_split;
             // Initialise child nodes
             // Width = split_point + 1 due to 0 indexing
-            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], split_point, part_height);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], part_width - (split_point), part_height);
+            DungeonPartitionTree child_territories = (rand.nextFloat() <= TERRITORY_SPLIT_CHANCE) ? null : territory_root;
+            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], split_point, part_height, child_territories);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], part_width - (split_point), part_height, child_territories);
             // Partition children, alternate partitioning by width and height
             l_child.partitionHeight(min_height, min_width, rand);
             r_child.partitionHeight(min_height, min_width, rand);
@@ -66,8 +74,9 @@ public class DungeonPartitionTree {
             int max_split = part_height - min_height;
             int split_point = rand.nextInt((max_split - min_split) + 1) + min_split;
             // Initialise child nodes
-            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], part_width, split_point);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - (split_point));
+            DungeonPartitionTree child_territories = (rand.nextFloat() <= TERRITORY_SPLIT_CHANCE) ? null : territory_root;
+            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], part_width, split_point, child_territories);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - (split_point), child_territories);
             // Partition children, alternate partitioning by width and height
             l_child.partitionWidth(min_height, min_width, rand);
             r_child.partitionWidth(min_height, min_width, rand);
@@ -190,7 +199,7 @@ public class DungeonPartitionTree {
         int empty_spaces = 0;
         for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
             for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
-                if (level_tile_map[x][y] == 1) {
+                if (level_tile_map[x][y] == 1 || (!fill_space && level_tile_map[x][y] == 3)) {
                     empty_spaces++;
                 }
             }
@@ -201,7 +210,7 @@ public class DungeonPartitionTree {
             int space = rand.nextInt(empty_spaces);
             for (int x = room_bl_corner[0] + 1; x < (room_tr_corner[0] - 1); x++) {
                 for (int y = room_bl_corner[1] + 1; y < (room_tr_corner[1] - 1); y++) {
-                    if (level_tile_map[x][y] == 1) {
+                    if (level_tile_map[x][y] == 1 || (!fill_space && level_tile_map[x][y] == 3)) {
                         if (space > 1) {
                             space--;
                         } else {
@@ -290,7 +299,7 @@ public class DungeonPartitionTree {
             if (rand.nextFloat() <= Kobold.spawn_chance) {
                 monster_level = rand.nextInt(4) + dungeon_level - 2;
                 monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
-                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], this, monster_level));
+                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
             }
             // Try to spawn an equippable item
 
