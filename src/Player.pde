@@ -35,13 +35,6 @@ final class Player extends Entity {
     // Calculate damage for the player's attack
     // spell_modifier is a % value
     int calculateDamage(float spell_modifier) {
-        print("Damage\n");
-        print(intelligence());
-        print("\n");
-        print((base_damage + weapon_modifier));
-        print("\n");
-        print((spell_modifier/100));
-        print("\n");
         return (int) (intelligence() * (base_damage + weapon_modifier) * (spell_modifier/100));
     }
 
@@ -54,6 +47,7 @@ final class Player extends Entity {
         equipped_items = new int[]{-1, -1, -1};
         // Teach the player a basic firebolt spell
         known_spells = new Spell[4];
+        spells_collected = 0;
         this.addSpell(new Firebolt(0, 0, 1));
     }
 

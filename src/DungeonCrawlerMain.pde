@@ -8,11 +8,13 @@ final int   tile_size = 50,
 DungeonLevelHandler dungeon_handler;
 InventoryHandler inventory_handler;
 CombatHandler combat_handler;
+GameOverHandler game_over_handler;
 // Use game_state to select which screen we want to display
 // 0 = Start screen
 // 1 = Dungeon screen
 // 2 = Inventory screen
 // 3 = Combat screen
+// 4 = Game over screen
 int game_state = 0;
 // Used for backtracking after showing the inventory
 int prev_game_state = 0;
@@ -29,7 +31,7 @@ private ArrayList<Monster> combat_queue;
 // Array of Booleans used to track user inputs
 // corresponding to:
 // a pressed, d pressed, w pressed, s pressed, q pressed, e pressed, f pressed
-boolean[] input_array = new boolean[]{false, false, false, false, false, false, false};
+boolean[] input_array = new boolean[]{false, false, false, false, false, false, false, false};
 // Show inventory toggle
 boolean show_inventory = false;
 
@@ -40,7 +42,9 @@ void setup() {
     dungeon_handler = new DungeonLevelHandler(tile_size, dungeon_dimension_step, dungeon_size, rand, player);
     inventory_handler = new InventoryHandler(player);
     combat_handler = new CombatHandler(player);
+    game_over_handler = new GameOverHandler(player);
     combat_queue = new ArrayList<Monster>();
+    game_state = 0;
 }
 
 void enterDungeonScreen() {
@@ -50,8 +54,11 @@ void enterDungeonScreen() {
 
 // The gameloop function
 void draw() {
-    // TODO handle character death
-    // background(0);
+    // If the player is initialised then check if they have died
+    if (player != null && player.getHealth() <= 0) {
+        // Game over
+        game_state = 4;
+    }
     switch (game_state) {
         case 0:
             enterDungeonScreen();
@@ -72,6 +79,12 @@ void draw() {
                 combat_handler.run(combat_queue, input_array, rand);
             } else {
                 game_state = 1;
+            }
+            break;
+        case 4:
+            if (game_over_handler.run(input_array)) {
+                enterDungeonScreen();
+                setup();
             }
             break;
         default:
@@ -101,6 +114,9 @@ void keyPressed() {
     }
     if (key == 'f') {
         input_array[6] = true;
+    }
+    if (key == 'r') {
+        input_array[7] = true;
     }
     if (key == 'i') {
         // i is reserved for the inventory screen, toggles on and off
@@ -139,5 +155,8 @@ void keyReleased() {
     }
     if (key == 'f') {
         input_array[6] = false;
+    }
+    if (key == 'r') {
+        input_array[7] = false;
     }
 }

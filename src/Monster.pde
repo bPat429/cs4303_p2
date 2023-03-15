@@ -29,7 +29,10 @@ class Monster extends Entity {
     int current_path_index;
     // Boolean used to let monsters opt-out of chasing the player
     boolean hunting_the_player;
-    float plan_cooldown;
+    // Cooldowns to reduce computational load of each monster
+    float roam_planning_cooldown;
+    float planning_cooldown;
+    boolean path_leads_to_player;
 
     Monster(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level, String type) {
         super(spawn_x, spawn_y, level, type);
@@ -38,6 +41,8 @@ class Monster extends Entity {
         hunting_the_player = true;
         // The subtree containing the monster's territory. This is used to find where the monster may roam when idle
         this.home_territory = home_territory;
+        roam_planning_cooldown = -1000;
+        planning_cooldown = -1000;
     }
 
     int calculateExperience() {
@@ -69,6 +74,7 @@ class Monster extends Entity {
                 hunting_the_player = true;
                 // A new path is needed
                 current_path = navigateAStar(level_tile_map, last_player_position);
+                path_leads_to_player = true;
         }
     }
 
@@ -78,24 +84,35 @@ class Monster extends Entity {
         int[] roam_goal = home_territory.getRandomPos(level_tile_map, rand);
         // A new path is needed
         current_path = navigateAStar(level_tile_map, roam_goal);
+        path_leads_to_player = false;
     }
 
     // Default AI decision procedure
     // Include the monsters arraylist to allow pack tactics
     void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, Random rand, float frame_duration) {
-        // Check if the player is detected
-        detectPlayer(player);
-        // Pathfinding
-        // Check if the player is nearby, or if we been alerted to the player's position
-        if (last_player_position != null && millis() - player_last_seen < 3000) {
-            // If the current path doesn't lead to the player then update the path
-            updatePlayerPath(level_tile_map);
-        } else {
-            // If the player is not nearby then complete the current path (to their last known position or a roam goal)(if they've been seen at all)
-            if (current_path == null) {
-                // If the path is null then set a roam goal
-                updateRoamPath(level_tile_map, rand);
+        if (millis() - planning_cooldown > 100) {
+            // Check if the player is detected
+            detectPlayer(player);
+            // Pathfinding
+            // Check if the player is nearby, or if we been alerted to the player's position
+            if (last_player_position != null && millis() - player_last_seen < 3000) {
+                // If the current path doesn't lead to the player then update the path
+                updatePlayerPath(level_tile_map);
+            } else {
+                // If the alert period has expired then revert to idle behaviour
+                // This is important because sometimes monsters think the player is inside a wall, in which case they
+                // will never resolve their paths normally
+                if (player_last_seen > 6000 && path_leads_to_player) {
+                    current_path = null;
+                }
+                // If the player is not nearby then complete the current path (to their last known position or a roam goal)(if they've been seen at all)
+                if (current_path == null && millis() - roam_planning_cooldown > 2000) {
+                    // If the path is null then set a roam goal
+                    updateRoamPath(level_tile_map, rand);
+                    roam_planning_cooldown = millis();
+                }
             }
+            planning_cooldown = millis();
         }
         // Pursue the goal
         pursueGoal(frame_duration, player);
@@ -201,8 +218,12 @@ class Monster extends Entity {
         while(completed_path_node == null) {
             int best_index = getBestNodeInFrontier(frontier);
             // Return the best node if the search limit is reached, or the node has reached the goal
-            if (search_limit > 1000 || frontier.get(best_index).isGoal()) {
-                completed_path_node = frontier.get(best_index);
+            if (search_limit > 200 || (frontier.size() > 0 && frontier.get(best_index).isGoal())) {
+                if (frontier.size() > 0) {
+                    completed_path_node = frontier.get(best_index);
+                } else {
+                    completed_path_node = new AStarNode(null, this.getDisplayTileLocation(), goal_pos);
+                }
             } else {
                 AStarNode[] new_nodes = frontier.get(best_index).exploreNode(level_tile_map, goal_pos);
                 // Pop explored node from the frontier

@@ -1,13 +1,18 @@
 // Goblin type monster
-class Kobold extends Monster {
+class Goblin extends Monster {
     static final float spawn_chance = 0.33;
     private float alert_cooldown = -10000;
     private float pack_behaviour_cooldown = 0;
     private int[] last_pack_position;
 
-    Kobold(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level) {
-        super(spawn_x, spawn_y, home_territory, level, "Kobold");
-        super.setImage(loadImage("kobold.png"));
+    Goblin(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level) {
+        super(spawn_x, spawn_y, home_territory, level, "Goblin");
+        print("Spawned Goblin");
+        super.setImage(loadImage("Goblin.png"));
+        // Goblins are more numerous but also weaker
+        super.base_constitution = super.base_constitution - 2;
+        super.base_dexterity = super.base_dexterity - 2;
+        super.base_damage = super.base_damage - 2;
     }
 
     void updateRegroupPath(int[][] level_tile_map) {
@@ -22,7 +27,7 @@ class Kobold extends Monster {
 
     // Default AI decision procedure
     // Include the monsters arraylist to allow pack tactics
-    // This is the same as the Goblin planning function
+    // This is the same as the Kobold planning function
     void plan(int[][] level_tile_map, Player player, ArrayList<Monster> monsters, Random rand, float frame_duration) {
         if (millis() - planning_cooldown > 100) {
             // If the player is far away then run the normal planning procedure

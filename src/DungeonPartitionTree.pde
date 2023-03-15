@@ -13,17 +13,20 @@ public class DungeonPartitionTree {
     private DungeonPartitionTree l_child;
     private DungeonPartitionTree r_child;
     private DungeonPartitionTree territory_root;
+    // Either goblin or kobold territory
+    private boolean is_goblin_territory;
     // Chance of child partitions starting their own territory tree. Lower probability leads to larger monster territories
-    private float TERRITORY_SPLIT_CHANCE = 0.0;
+    private float TERRITORY_SPLIT_CHANCE = 0.2;
 
     // Create node
-    DungeonPartitionTree(int bottom_left_x, int bottom_left_y, int part_width, int part_height, DungeonPartitionTree territory_root) {
+    DungeonPartitionTree(int bottom_left_x, int bottom_left_y, int part_width, int part_height, DungeonPartitionTree territory_root, Random rand) {
         this.bottom_left_coordinates = new int[]{bottom_left_x, bottom_left_y};
         this.part_width = part_width;
         this.part_height = part_height;
         this.territory_root = territory_root;
         if (this.territory_root == null) {
             this.territory_root = this;
+            this.is_goblin_territory = (rand.nextFloat() > 0.5);
         }
     }
 
@@ -46,6 +49,10 @@ public class DungeonPartitionTree {
         return r_child;
     }
 
+    boolean getTerritoryType() {
+        return is_goblin_territory;
+    }
+
     // If the node's width >= 2*min_width, and height >= min_height then allow partitioning.
     // Else set this as a leaf node and create a room
     void partitionWidth(int min_height, int min_width, Random rand) {
@@ -58,8 +65,8 @@ public class DungeonPartitionTree {
             // Initialise child nodes
             // Width = split_point + 1 due to 0 indexing
             DungeonPartitionTree child_territories = (rand.nextFloat() <= TERRITORY_SPLIT_CHANCE) ? null : territory_root;
-            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], split_point, part_height, child_territories);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], part_width - (split_point), part_height, child_territories);
+            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], split_point, part_height, child_territories, rand);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0] + split_point, bottom_left_coordinates[1], part_width - (split_point), part_height, child_territories, rand);
             // Partition children, alternate partitioning by width and height
             l_child.partitionHeight(min_height, min_width, rand);
             r_child.partitionHeight(min_height, min_width, rand);
@@ -74,8 +81,8 @@ public class DungeonPartitionTree {
             int split_point = rand.nextInt((max_split - min_split) + 1) + min_split;
             // Initialise child nodes
             DungeonPartitionTree child_territories = (rand.nextFloat() <= TERRITORY_SPLIT_CHANCE) ? null : territory_root;
-            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], part_width, split_point, child_territories);
-            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - (split_point), child_territories);
+            l_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1], part_width, split_point, child_territories, rand);
+            r_child = new DungeonPartitionTree(bottom_left_coordinates[0], bottom_left_coordinates[1] + split_point, part_width, part_height - (split_point), child_territories, rand);
             // Partition children, alternate partitioning by width and height
             l_child.partitionWidth(min_height, min_width, rand);
             r_child.partitionWidth(min_height, min_width, rand);
@@ -296,9 +303,13 @@ public class DungeonPartitionTree {
                 item_level = rand.nextInt(4) + 1;
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 // Choose spell type
-                // TODO add more spells
-                if (true) {
+                float choice = rand.nextFloat();
+                if (choice <= 0.33) {
                     level_interactables.add(new Firebolt(item_location[0], item_location[1], item_level));
+                } else if (choice <= 0.66) {
+                    level_interactables.add(new StaticShock(item_location[0], item_location[1], item_level));
+                } else {
+                    level_interactables.add(new Snowball(item_location[0], item_location[1], item_level));
                 }
             }            
         }
@@ -313,13 +324,27 @@ public class DungeonPartitionTree {
         } else {
             int monster_level;
             int[] monster_spawn_location;
-            // Try to spawn a kobold
-            if (rand.nextFloat() <= Kobold.spawn_chance) {
-                monster_level = rand.nextInt(4) + dungeon_level - 2;
-                monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
-                monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
+            if (this.territory_root.getTerritoryType()) {
+                // Try to spawn one to four goblins
+                for (int i = 0; i < 2; i++) {
+                    if (rand.nextFloat() <= Goblin.spawn_chance) {
+                        monster_level = rand.nextInt(4) + dungeon_level - 2;
+                        monster_level = (monster_level > 0) ? monster_level : 1;
+                        monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
+                        monsters.add(new Goblin(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
+                    }
+                }
+            } else {
+                // Try to spawn one or two kobolds
+                for (int i = 0; i < 2; i++) {
+                    if (rand.nextFloat() <= Kobold.spawn_chance) {
+                        monster_level = rand.nextInt(4) + dungeon_level - 2;
+                        monster_level = (monster_level > 0) ? monster_level : 1;
+                        monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
+                        monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
+                    }
+                }
             }
-            // TODO multiple kobold spawn
         }
 
     }

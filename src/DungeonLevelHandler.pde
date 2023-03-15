@@ -49,7 +49,7 @@ final class DungeonLevelHandler {
         dungeon_size = dungeon_size + depth * dungeon_dimension_step;
         // Default value is 0
         level_tile_map = new int[dungeon_size][dungeon_size];
-        partition_tree = new DungeonPartitionTree(0, 0, dungeon_size, dungeon_size, null);
+        partition_tree = new DungeonPartitionTree(0, 0, dungeon_size, dungeon_size, null, rand);
         partition_tree.partitionWidth(dungeon_min_partition_size, dungeon_min_partition_size, rand);
         partition_tree.createRoom(dungeon_room_size, dungeon_room_size, rand);
         partition_tree.drawRooms(level_tile_map);
@@ -144,7 +144,7 @@ final class DungeonLevelHandler {
             if (current_monster != null) {
                 current_monster.plan(level_tile_map, player, monsters, rand, frame_duration);
                 current_monster.handleWallCollisions(level_tile_map);
-                current_monster.checkPlayerEncounter(combat_queue, player);
+                // current_monster.checkPlayerEncounter(combat_queue, player);
             }
         }
         // draw level

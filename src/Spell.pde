@@ -7,6 +7,7 @@ class Spell extends Interactable {
     private int cooldown;
     private String spell_name;
     static final float spawn_chance = 0.20;
+    private int default_cooldown_val = -2;
     
     Spell(int x_pos, int y_pos, int item_level, String spell_name) {
         super(x_pos, y_pos, item_level);
@@ -14,7 +15,7 @@ class Spell extends Interactable {
         super.type = 2;
         this.spell_name = spell_name;
         this.cooldown = item_level;
-        this.turn_cooldown = -10;
+        this.turn_cooldown = default_cooldown_val;
     }
 
     // Check if the spell is ready to be used
@@ -28,8 +29,13 @@ class Spell extends Interactable {
     }
 
     // Reset the cooldowns after combat
+    // Aim for 2nd level ready immediately, 3rd level ready next turn and 4th level ready in 2 turns
     public void resetCooldown() {
-        turn_cooldown = -10;
+        turn_cooldown = default_cooldown_val;
+    }
+
+    public void updateName(String name) {
+        this.spell_name = name;
     }
 
     // Reset the cooldowns after combat

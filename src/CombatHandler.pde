@@ -35,7 +35,6 @@ final class CombatHandler {
             if (damage > -1) {
                 player_last_action = "Cast spell, ";
                 float monster_dodge_chance = monster.dodge_chance(player.dexterity(), player.getLevel());
-                print(monster_dodge_chance);
                 boolean monster_dodges = (rand.nextFloat() <= monster_dodge_chance);
                 if (monster_dodges) {
                     player_last_action = player_last_action + monster.getType() + " dodges the attack";
@@ -57,8 +56,6 @@ final class CombatHandler {
         // Monster's turn
         int damage = monster.calculateDamage();
         float player_dodge_chance = player.dodge_chance(monster.dexterity(), monster.getLevel());
-        print("Geh\n");
-        print(player_dodge_chance);
         boolean player_dodges = (rand.nextFloat() <= player_dodge_chance);
         monster_last_action = "Attacks the player, ";
         if (player_dodges) {
@@ -73,7 +70,10 @@ final class CombatHandler {
     void run(ArrayList<Monster> combat_queue, boolean[] input_array, Random rand) {
         if (millis() - input_cooldown > 100) {
             // Use input_cooldown to give a slight delay before defeating the monster/game over
-            // TODO player defeat
+            if (player.getHealth() <= 0) {
+                // Game over
+                return;
+            }
             if (combat_queue.get(0).getHealth() <= 0) {
                 int exp = combat_queue.get(0).calculateExperience();
                 player.addExperience(exp);
@@ -134,6 +134,7 @@ final class CombatHandler {
         String last_action = (entity.getType() == "player") ? player_last_action : monster_last_action;
         last_action = (last_action == null) ? "Combat begins." : last_action;
         fill(200);
+        text(entity.getType() + ", Level: " + Integer.toString(entity.getLevel()), x_offset + small_step * 2, y_segment - small_step * 3.5);
         text("Log: " + last_action, x_offset + small_step * 2, y_segment - small_step * 2);
         
     }
