@@ -2,6 +2,7 @@
 class Equipment extends Interactable {
     // equipment_type: 0 = head, 1 = chest, 2 = weapon
     private int equipment_type;
+    static final float spawn_chance = 0.20;
 
     Equipment(int x_pos, int y_pos, int item_level, int equipment_type, PImage item_image) {
         super(x_pos, y_pos, item_level);

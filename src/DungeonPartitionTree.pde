@@ -277,8 +277,8 @@ public class DungeonPartitionTree {
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
-            // Try to spawn an equippable item
-            if (rand.nextFloat() <= 0.2) {
+            // Try to spawn an equippable item, limit to <= 1 per room
+            if (rand.nextFloat() <= Equipment.spawn_chance) {
                 item_level = rand.nextInt(4) + 1;
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 // Choose item type
@@ -291,9 +291,16 @@ public class DungeonPartitionTree {
                     level_interactables.add(new WizardStaff(item_location[0], item_location[1], item_level));
                 }
             }
-            // Try to spawn a spell
-            // TODO spell spawning
-            
+            // Try to spawn a spell, limit to <= 1 per room
+            if (rand.nextFloat() <= Spell.spawn_chance) {
+                item_level = rand.nextInt(4) + 1;
+                item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
+                // Choose spell type
+                // TODO add more spells
+                if (true) {
+                    level_interactables.add(new Firebolt(item_location[0], item_location[1], item_level));
+                }
+            }            
         }
 
     }

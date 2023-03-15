@@ -195,6 +195,13 @@ final class Player extends Entity {
         }
         return null;
     }
+
+    boolean isSpellReady(int spell_index, int turn) {
+        if (known_spells[spell_index] != null) {
+            return (known_spells[spell_index].checkCooldown(turn));
+        }
+        return true;
+    }
     
     // Reset spell cooldowns, ready for combat
     void resetSpellCooldowns() {

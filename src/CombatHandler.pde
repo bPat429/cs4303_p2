@@ -10,6 +10,7 @@ final class CombatHandler {
     private int selected_slot;
     private int selected_option;
     private PImage execute_label;
+    private PImage cooldown_label;
     // Slow down rate of inputs
     private float input_cooldown;
     private String player_last_action;
@@ -21,6 +22,7 @@ final class CombatHandler {
         selected_slot = 0;
         selected_option = 0;
         execute_label = loadImage("Execute.png");
+        cooldown_label = loadImage("onCooldown.png");
         current_turn = 0;
     }
 
@@ -40,7 +42,7 @@ final class CombatHandler {
                 } else {
                     player_last_action = player_last_action + "Hits for " + Integer.toString(damage) + " damage!";
                     monster.setHealth(monster.getHealth() - damage);
-                    if (monster.getHealth() < 0) {
+                    if (monster.getHealth() <= 0) {
                         return;
                     }
                 }
@@ -69,7 +71,7 @@ final class CombatHandler {
     }
 
     void run(ArrayList<Monster> combat_queue, boolean[] input_array, Random rand) {
-        if (millis() - input_cooldown > 50) {
+        if (millis() - input_cooldown > 100) {
             // Use input_cooldown to give a slight delay before defeating the monster/game over
             // TODO player defeat
             if (combat_queue.get(0).getHealth() <= 0) {
@@ -164,6 +166,14 @@ final class CombatHandler {
                         textSize(small_step);
                         fill(255);
                         text(spell_name, x_pos + small_step * 7, y_pos + small_step * 1);
+                        if (!player.isSpellReady(i + 2 * j, current_turn)) {
+                            // Spell is on cooldown
+                            cooldown_label.resize(combat_rect_width, 0);
+                            tint(255, 200);
+                            image(cooldown_label, x_pos, y_pos + small_step * 0.5); 
+                            tint(255, 255);
+                            
+                        }
                     }
                 }
                 if (selected_slot == i + 3 * j) {

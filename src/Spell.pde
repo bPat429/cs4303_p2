@@ -6,6 +6,8 @@ class Spell extends Interactable {
     private int turn_cooldown;
     private int cooldown;
     private String spell_name;
+    static final float spawn_chance = 0.20;
+    
     Spell(int x_pos, int y_pos, int item_level, String spell_name) {
         super(x_pos, y_pos, item_level);
         super.item_image = loadImage("SpellTome.png");
