@@ -7,7 +7,6 @@ class Goblin extends Monster {
 
     Goblin(int spawn_x, int spawn_y, DungeonPartitionTree home_territory, int level) {
         super(spawn_x, spawn_y, home_territory, level, "Goblin");
-        print("Spawned Goblin");
         super.setImage(loadImage("Goblin.png"));
         // Goblins are more numerous but also weaker
         super.base_constitution = super.base_constitution - 2;

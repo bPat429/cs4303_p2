@@ -8,7 +8,6 @@ final class CombatHandler {
     private int combat_rect_spacing = displayWidth/20;
     private int left_offset = displayWidth/5;
     private int selected_slot;
-    private int selected_option;
     private PImage execute_label;
     private PImage cooldown_label;
     // Slow down rate of inputs
@@ -20,13 +19,13 @@ final class CombatHandler {
     CombatHandler(Player player) {
         this.player = player;
         selected_slot = 0;
-        selected_option = 0;
         execute_label = loadImage("Execute.png");
         cooldown_label = loadImage("onCooldown.png");
         current_turn = 0;
     }
 
-    void runCombatTurn(Monster monster, Random rand) {
+    void runCombatTurn(ArrayList<Monster> combat_queue, Monster monster, Random rand) {
+        boolean monster_tries_to_dodge = (rand.nextFloat() <= 0.1);
         int column_index = selected_slot % 3;
         if (column_index < 2) {
             int spell_index = (selected_slot > 2) ? column_index + 2 : column_index;
@@ -34,7 +33,8 @@ final class CombatHandler {
             int damage = player.castSpell(spell_index, current_turn);
             if (damage > -1) {
                 player_last_action = "Cast spell, ";
-                float monster_dodge_chance = monster.dodge_chance(player.dexterity(), player.getLevel());
+                // If the monster is trying to dodge then halve the player's dex and level
+                float monster_dodge_chance = (monster_tries_to_dodge) ? monster.dodge_chance(player.dexterity()/2, player.getLevel()/2) : monster.dodge_chance(player.dexterity(), player.getLevel());
                 boolean monster_dodges = (rand.nextFloat() <= monster_dodge_chance);
                 if (monster_dodges) {
                     player_last_action = player_last_action + monster.getType() + " dodges the attack";
@@ -50,19 +50,38 @@ final class CombatHandler {
                 return;
             }
         } else {
-            // TODO implement other actions
-            return;
+            // If dodging resolve it in the monster's turn
+            if (selected_slot == 2) {
+                player_last_action = "Player tries to dodge";
+            } else if (selected_slot == 5) {
+                // Try to flee
+                player_last_action = "Player tries to flee";
+                // Player escape chance is always 0.5, tying it to stats will make it harder for the player to flee when they should be running
+                // e.g. the monster is a higher level
+                if (rand.nextFloat() <= 0.5) {
+                    // On successful flee just remove the mosnter from the queue. This avoids awarding the player xp
+                    combat_queue.remove(0);
+                    current_turn = 0;
+                    player.resetSpellCooldowns();
+                    return;
+                }
+            }
         }
         // Monster's turn
-        int damage = monster.calculateDamage();
-        float player_dodge_chance = player.dodge_chance(monster.dexterity(), monster.getLevel());
-        boolean player_dodges = (rand.nextFloat() <= player_dodge_chance);
-        monster_last_action = "Attacks the player, ";
-        if (player_dodges) {
-            monster_last_action = monster_last_action + "Player dodges the attack";
+        if (monster_tries_to_dodge) {
+            monster_last_action = "Monster tries to dodge";
         } else {
-            monster_last_action = monster_last_action + "Hits for " + Integer.toString(damage) + " damage!";
-            player.setHealth(player.getHealth() - damage);
+            int damage = monster.calculateDamage();
+            // If player is dodging then halve the monster's dex and level
+            float player_dodge_chance = (selected_slot == 2) ? player.dodge_chance(monster.dexterity()/2, monster.getLevel()/2) : player.dodge_chance(monster.dexterity(), monster.getLevel());
+            boolean player_dodges = (rand.nextFloat() <= player_dodge_chance);
+            monster_last_action = "Attacks the player, ";
+            if (player_dodges) {
+                monster_last_action = monster_last_action + "Player dodges the attack";
+            } else {
+                monster_last_action = monster_last_action + "Hits for " + Integer.toString(damage) + " damage!";
+                player.setHealth(player.getHealth() - damage);
+            }
         }
         current_turn++;
     }
@@ -105,7 +124,7 @@ final class CombatHandler {
             }
             if (input_array[6]) {
                 // Select option
-                runCombatTurn(combat_queue.get(0), rand);
+                runCombatTurn(combat_queue, combat_queue.get(0), rand);
             }
         }
         drawComponent();
@@ -146,7 +165,10 @@ final class CombatHandler {
         int x_segment = displayWidth/7;
         int y_segment = displayHeight/2 - small_step * 4;
         drawCharacter(x_segment, player);
-        drawCharacter(x_segment * 4, combat_queue.get(0));
+        // If the player has fled don't draw the enemy
+        if (combat_queue.size() > 0) {
+            drawCharacter(x_segment * 4, combat_queue.get(0));
+        }
 
         // Lower half of the screen display the options
         int y_offset = displayHeight/2;
