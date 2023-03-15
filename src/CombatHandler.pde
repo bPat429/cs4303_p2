@@ -10,6 +10,8 @@ final class CombatHandler {
     private int selected_slot;
     private PImage execute_label;
     private PImage cooldown_label;
+    private PImage dodge_label;
+    private PImage flee_label;
     // Slow down rate of inputs
     private float input_cooldown;
     private String player_last_action;
@@ -21,6 +23,8 @@ final class CombatHandler {
         selected_slot = 0;
         execute_label = loadImage("Execute.png");
         cooldown_label = loadImage("onCooldown.png");
+        dodge_label = loadImage("Dodge.png");
+        flee_label = loadImage("Flee.png");
         current_turn = 0;
     }
 
@@ -198,6 +202,12 @@ final class CombatHandler {
                             
                         }
                     }
+                } else if (j == 0) {
+                    dodge_label.resize(combat_rect_width/2, 0);
+                    image(dodge_label, x_pos + combat_rect_width/2 - small_step * 4.5, y_pos - small_step * 2); 
+                } else {
+                    flee_label.resize(combat_rect_width/2, 0);
+                    image(flee_label, x_pos + combat_rect_width/2 - small_step * 4.5, y_pos - small_step * 2); 
                 }
                 if (selected_slot == i + 3 * j) {
                     // Use opacity to show which option is selected
