@@ -83,8 +83,15 @@ public class Entity {
         return this.location.dist(other_entity.getLocation());
     }
 
+    // Method used to help monsters pathfind to the player
+    // This is necessary because a tile's true position is the top left corner of what is displayed,
+    // so we need to adjust positions relative to tiles accordingly
     int[] getDisplayTileLocation() {
-        return new int[]{Math.round(location.x + 0.5), Math.round(location.y + 0.5)};
+        float x_pos_on_tile = location.x % 1;
+        float y_pos_on_tile = location.y % 1;
+        int x_tile = (x_pos_on_tile < 0.5) ? Math.round(location.x - 0.5) : Math.round(location.x + 0.5);
+        int y_tile = (y_pos_on_tile < 0.5) ? Math.round(location.y - 0.5) : Math.round(location.y + 0.5);
+        return new int[]{x_tile, y_tile};
     }
     
     int[] getTileLocation() {

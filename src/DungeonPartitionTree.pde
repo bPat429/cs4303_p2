@@ -266,6 +266,20 @@ public class DungeonPartitionTree {
         }
     }
 
+    // Generates an item/monster/spell level from 1-4, with decreasing probability from 1 to 4.
+    int calculateLevel(Random rand) {
+        float prob = rand.nextFloat();
+        if (prob < 0.5) {
+            return 1;
+        } else if (prob < 0.75) {
+            return 2;
+        } else if (prob < 0.9) {
+            return 3;
+        } else {
+            return 4;
+        }
+    }
+
     // Spawn items for the player to interact with in each room
     // Use random probability for deciding whether an item should be spawned
     // Base spawn probability on how frequently the items should apper
@@ -280,13 +294,13 @@ public class DungeonPartitionTree {
             int[] item_location;
             // Try to spawn a healing potion
             if (rand.nextFloat() <= HealthPotion.spawn_chance) {
-                item_level = rand.nextInt(4) + 1;
+                item_level = calculateLevel(rand);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 level_interactables.add(new HealthPotion(item_location[0], item_location[1], item_level));
             }
             // Try to spawn an equippable item, limit to <= 1 per room
             if (rand.nextFloat() <= Equipment.spawn_chance) {
-                item_level = rand.nextInt(4) + 1;
+                item_level = calculateLevel(rand);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 // Choose item type
                 float choice = rand.nextFloat();
@@ -300,7 +314,7 @@ public class DungeonPartitionTree {
             }
             // Try to spawn a spell, limit to <= 1 per room
             if (rand.nextFloat() <= Spell.spawn_chance) {
-                item_level = rand.nextInt(4) + 1;
+                item_level = calculateLevel(rand);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
                 // Choose spell type
                 float choice = rand.nextFloat();
@@ -328,7 +342,7 @@ public class DungeonPartitionTree {
                 // Try to spawn one to four goblins
                 for (int i = 0; i < 2; i++) {
                     if (rand.nextFloat() <= Goblin.spawn_chance) {
-                        monster_level = rand.nextInt(4) + dungeon_level - 2;
+                        monster_level = calculateLevel(rand) + dungeon_level - 3;
                         monster_level = (monster_level > 0) ? monster_level : 1;
                         monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
                         monsters.add(new Goblin(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
@@ -338,7 +352,7 @@ public class DungeonPartitionTree {
                 // Try to spawn one or two kobolds
                 for (int i = 0; i < 2; i++) {
                     if (rand.nextFloat() <= Kobold.spawn_chance) {
-                        monster_level = rand.nextInt(4) + dungeon_level - 2;
+                        monster_level = calculateLevel(rand) + dungeon_level - 2;
                         monster_level = (monster_level > 0) ? monster_level : 1;
                         monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, false);
                         monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));

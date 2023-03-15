@@ -76,7 +76,7 @@ final class Player extends Entity {
             for (int i = 0; i < MAX_INVENTORY; i++) {
                 if (inventory[i] == null) {
                     inventory[i] = new_item;
-                    inventory_space = inventory_space -1;
+                    inventory_space--;
                     return true;
                 }
             }
@@ -109,6 +109,7 @@ final class Player extends Entity {
     void dropItem(int item_index) {
         // If the item is equipment make sure to unequip it first
         unequip(item_index);
+        inventory_space++;
         inventory[item_index] = null;
     }
 
@@ -126,6 +127,7 @@ final class Player extends Entity {
                 }
             }
             if (inventory[item_index].use(this)) {
+                inventory_space++;
                 inventory[item_index] = null;
             } 
         }
@@ -181,6 +183,13 @@ final class Player extends Entity {
             return known_spells[spell_index].getSpellName() + " rank " + Integer.toString(known_spells[spell_index].getRank());
         }
         return null;
+    }
+
+    int getSpellLevel(int spell_index) {
+        if (known_spells[spell_index] != null) {
+            return known_spells[spell_index].getRank();
+        }
+        return -1;
     }
 
     PImage getSpellImage(int spell_index) {

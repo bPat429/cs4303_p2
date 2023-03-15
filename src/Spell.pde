@@ -11,7 +11,13 @@ class Spell extends Interactable {
     
     Spell(int x_pos, int y_pos, int item_level, String spell_name) {
         super(x_pos, y_pos, item_level);
-        super.item_image = loadImage("SpellTome.png");
+        if (item_level == 1) {
+            super.item_image = loadImage("SpellPage.png");
+        } else if (item_level == 2) {
+            super.item_image = loadImage("SpellScroll.png");
+        } else {
+            super.item_image = loadImage("SpellTome.png");
+        }
         super.type = 2;
         this.spell_name = spell_name;
         this.cooldown = item_level;

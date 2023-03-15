@@ -19,10 +19,12 @@ class WizardRobe extends Equipment {
   // Generic interact method to be overided
   public void applyBuffs(Player player) {
     player.addCon(base_buff * this.getRank());
+    player.addInt((base_buff * this.getRank()) / 3);
   }
 
   // Generic interact method to be overided
   public void removeBuffs(Player player) {
     player.removeCon(base_buff * this.getRank());
+    player.removeInt((base_buff * this.getRank()) / 3);
   }
 }

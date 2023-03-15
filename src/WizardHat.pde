@@ -19,10 +19,12 @@ class WizardHat extends Equipment {
   // Generic interact method to be overided
   public void applyBuffs(Player player) {
     player.addDex(base_buff * this.getRank());
+    player.addInt((base_buff * this.getRank()) / 3);
   }
 
   // Generic interact method to be overided
   public void removeBuffs(Player player) {
     player.removeDex(base_buff * this.getRank());
+    player.removeInt((base_buff * this.getRank()) / 3);
   }
 }

@@ -28,6 +28,15 @@ final class CombatHandler {
         current_turn = 0;
     }
 
+    void resetCombat() {
+        combat_queue.remove(0);
+        current_turn = 0;
+        player.resetSpellCooldowns();
+        player_last_action = null;
+        monster_last_action = null;
+        return;
+    }
+
     void runCombatTurn(ArrayList<Monster> combat_queue, Monster monster, Random rand) {
         boolean monster_tries_to_dodge = (rand.nextFloat() <= 0.1);
         int column_index = selected_slot % 3;
@@ -37,8 +46,8 @@ final class CombatHandler {
             int damage = player.castSpell(spell_index, current_turn);
             if (damage > -1) {
                 player_last_action = "Cast spell, ";
-                // If the monster is trying to dodge then halve the player's dex and level
-                float monster_dodge_chance = (monster_tries_to_dodge) ? monster.dodge_chance(player.dexterity()/2, player.getLevel()/2) : monster.dodge_chance(player.dexterity(), player.getLevel());
+                // If the monster is trying to dodge then ignore player stats
+                float monster_dodge_chance = (monster_tries_to_dodge) ? monster.dodge_chance(0, 0) : monster.dodge_chance(player.dexterity(), player.getLevel());
                 boolean monster_dodges = (rand.nextFloat() <= monster_dodge_chance);
                 if (monster_dodges) {
                     player_last_action = player_last_action + monster.getType() + " dodges the attack";
@@ -64,10 +73,7 @@ final class CombatHandler {
                 // e.g. the monster is a higher level
                 if (rand.nextFloat() <= 0.5) {
                     // On successful flee just remove the mosnter from the queue. This avoids awarding the player xp
-                    combat_queue.remove(0);
-                    current_turn = 0;
-                    player.resetSpellCooldowns();
-                    return;
+                    resetCombat();
                 }
             }
         }
@@ -76,8 +82,8 @@ final class CombatHandler {
             monster_last_action = "Monster tries to dodge";
         } else {
             int damage = monster.calculateDamage();
-            // If player is dodging then halve the monster's dex and level
-            float player_dodge_chance = (selected_slot == 2) ? player.dodge_chance(monster.dexterity()/2, monster.getLevel()/2) : player.dodge_chance(monster.dexterity(), monster.getLevel());
+            // If player is dodging then ignore the monster's stats
+            float player_dodge_chance = (selected_slot == 2) ? player.dodge_chance(0, 0) : player.dodge_chance(monster.dexterity(), monster.getLevel());
             boolean player_dodges = (rand.nextFloat() <= player_dodge_chance);
             monster_last_action = "Attacks the player, ";
             if (player_dodges) {
@@ -100,9 +106,7 @@ final class CombatHandler {
             if (combat_queue.get(0).getHealth() <= 0) {
                 int exp = combat_queue.get(0).calculateExperience();
                 player.addExperience(exp);
-                combat_queue.remove(0);
-                current_turn = 0;
-                player.resetSpellCooldowns();
+                resetCombat();
                 // Return to the dungeon after defeating the last enemy
                 if (combat_queue.size() == 0) {
                     return;
@@ -174,6 +178,11 @@ final class CombatHandler {
             drawCharacter(x_segment * 4, combat_queue.get(0));
         }
 
+        // Display current turn
+        fill(0);
+        textSize(small_step * 2);
+        text("Turn: " + Integer.toString(current_turn), displayWidth / 2 - small_step * 3, (y_segment + small_step * 4));
+
         // Lower half of the screen display the options
         int y_offset = displayHeight/2;
         for (int j = 0; j < 2; j++) {
@@ -189,7 +198,12 @@ final class CombatHandler {
                     if (spell_image != null) {
                         spell_name = player.getSpellName(i + 2 * j);
                         spell_image.resize(0, combat_rect_height);
-                        image(spell_image, x_pos + (combat_rect_width - spell_image.width)/2, y_pos);
+                        // SpellPage image is a little too large so shift it down
+                        if (player.getSpellLevel(i + 2 * j) == 1) {
+                            image(spell_image, x_pos + (combat_rect_width - spell_image.width)/2, y_pos + small_step);
+                        } else {
+                            image(spell_image, x_pos + (combat_rect_width - spell_image.width)/2, y_pos);
+                        }
                         textSize(small_step);
                         fill(255);
                         text(spell_name, x_pos + small_step * 7, y_pos + small_step * 1);
