@@ -280,6 +280,32 @@ public class DungeonPartitionTree {
         }
     }
 
+    // Add new equipment here
+    Interactable selectRandomEquipment(int[] item_location, int item_level, Random rand) {
+        // Choose item type
+        float choice = rand.nextFloat();
+        if (choice <= 0.33) {
+            return new WizardHat(item_location[0], item_location[1], item_level);
+        } else if (choice <= 0.66) {
+            return new WizardRobe(item_location[0], item_location[1], item_level);
+        } else {
+            return new WizardStaff(item_location[0], item_location[1], item_level);
+        }
+    }
+
+    // Add new spells here
+    Interactable selectRandomSpell(int[] item_location, int item_level, Random rand) {
+        // Choose spell type
+        float choice = rand.nextFloat();
+        if (choice <= 0.33) {
+            return new Firebolt(item_location[0], item_location[1], item_level);
+        } else if (choice <= 0.66) {
+            return new StaticShock(item_location[0], item_location[1], item_level);
+        } else {
+            return new Snowball(item_location[0], item_location[1], item_level);
+        }
+    }
+
     // Spawn items for the player to interact with in each room
     // Use random probability for deciding whether an item should be spawned
     // Base spawn probability on how frequently the items should apper
@@ -302,39 +328,23 @@ public class DungeonPartitionTree {
             if (rand.nextFloat() <= Equipment.spawn_chance) {
                 item_level = calculateLevel(rand);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
-                // Choose item type
-                float choice = rand.nextFloat();
-                if (choice <= 0.33) {
-                    level_interactables.add(new WizardHat(item_location[0], item_location[1], item_level));
-                } else if (choice <= 0.66) {
-                    level_interactables.add(new WizardRobe(item_location[0], item_location[1], item_level));
-                } else {
-                    level_interactables.add(new WizardStaff(item_location[0], item_location[1], item_level));
-                }
+                level_interactables.add(selectRandomEquipment(item_location, item_level, rand));
             }
             // Try to spawn a spell, limit to <= 1 per room
             if (rand.nextFloat() <= Spell.spawn_chance) {
                 item_level = calculateLevel(rand);
                 item_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
-                // Choose spell type
-                float choice = rand.nextFloat();
-                if (choice <= 0.33) {
-                    level_interactables.add(new Firebolt(item_location[0], item_location[1], item_level));
-                } else if (choice <= 0.66) {
-                    level_interactables.add(new StaticShock(item_location[0], item_location[1], item_level));
-                } else {
-                    level_interactables.add(new Snowball(item_location[0], item_location[1], item_level));
-                }
+                level_interactables.add(selectRandomSpell(item_location, item_level, rand));
             }            
         }
 
     }
 
-    // zone_type is used to pass the area type to all children in a tree, this allows creating different zones in the level
-    void spawnMonsters(int[][] level_tile_map, ArrayList<Monster> monsters, int dungeon_level, Random rand, int zone_type) {
+    // Include level_interactables to allow spawning loot under mimics
+    void spawnMonsters(int[][] level_tile_map, ArrayList<Monster> monsters, ArrayList<Interactable> level_interactables, int dungeon_level, Random rand) {
         if (l_child != null && r_child != null) {
-            l_child.spawnMonsters(level_tile_map, monsters, dungeon_level, rand, zone_type);
-            r_child.spawnMonsters(level_tile_map, monsters, dungeon_level, rand, zone_type);
+            l_child.spawnMonsters(level_tile_map, monsters, level_interactables, dungeon_level, rand);
+            r_child.spawnMonsters(level_tile_map, monsters, level_interactables, dungeon_level, rand);
         } else {
             int monster_level;
             int[] monster_spawn_location;
@@ -358,6 +368,16 @@ public class DungeonPartitionTree {
                         monsters.add(new Kobold(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
                     }
                 }
+            }
+            // Try to spawn a mimic with loot
+            if (rand.nextFloat() <= Mimic.spawn_chance) {
+                int rand_level = calculateLevel(rand);
+                monster_level = rand_level + dungeon_level;
+                // Flag that we are spawning an item on this tile
+                monster_spawn_location = getRandomUnoccupiedSpace(level_tile_map, rand, true);
+                monsters.add(new Mimic(monster_spawn_location[0], monster_spawn_location[1], territory_root, monster_level));
+                // The stronger the mimic, the better the item
+                level_interactables.add(selectRandomEquipment(monster_spawn_location, rand_level, rand));
             }
         }
 

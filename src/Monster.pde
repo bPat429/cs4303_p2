@@ -49,6 +49,23 @@ class Monster extends Entity {
         return this.getLevel();
     }
 
+    void setEntitySpeed(int new_speed) {
+        super.entity_speed = new_speed;
+    }
+
+    void setFullSpeed() {
+        super.entity_speed = base_speed;
+    }
+
+    void setRoamSpeed() {
+        super.entity_speed = base_speed / 4;
+    }
+
+    // Method for doubling interact radius for mosnters with a large reach
+    void doubleEntityInteractRadius() {
+        super.interact_radius = super.interact_radius * 2;
+    }
+
     // Alert the monster to the player's location
     void alertMonster(int[] player_position) {
         last_player_position = player_position;
@@ -67,7 +84,7 @@ class Monster extends Entity {
     }
 
     void updatePlayerPath(int[][] level_tile_map) {
-        super.entity_speed = base_speed;
+        setFullSpeed();
         if (current_path == null
             || current_path[current_path.length - 1][0] != last_player_position[0]
             || current_path[current_path.length - 1][1] != last_player_position[1]) {
@@ -79,7 +96,7 @@ class Monster extends Entity {
     }
 
     void updateRoamPath(int[][] level_tile_map, Random rand) {
-        super.entity_speed = base_speed / 4;
+        setRoamSpeed();
         // Get a random position from one of the rooms in this monster's territory
         int[] roam_goal = home_territory.getRandomPos(level_tile_map, rand);
         // A new path is needed
@@ -263,7 +280,10 @@ class Monster extends Entity {
         float sum_radius = this.getInteractRadius() + player.getInteractRadius();
         // Make it easier to collide with the player
         if (sum_radius + 0.25 >= d) {
-            combat_queue.add(this);
+            // Check that this monster isn't already in the queue
+            if (!combat_queue.contains(this)) {
+                combat_queue.add(this);
+            }
         }
     }
 }

@@ -107,10 +107,12 @@ final class Player extends Entity {
     }
 
     void dropItem(int item_index) {
-        // If the item is equipment make sure to unequip it first
-        unequip(item_index);
-        inventory_space++;
-        inventory[item_index] = null;
+        if (inventory[item_index] != null) {
+          // If the item is equipment make sure to unequip it first
+          unequip(item_index);
+          inventory_space++;
+          inventory[item_index] = null;
+        }
     }
 
     void useItem(int item_index) {

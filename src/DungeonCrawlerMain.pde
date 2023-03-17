@@ -94,31 +94,31 @@ void draw() {
 }
 
 void keyPressed() {
-    if (key == 'a') {
+    if (key == 'a' || key == 'A') {
         input_array[0] = true;
     }
-    if (key == 'd') {
+    if (key == 'd' || key == 'D') {
         input_array[1] = true;
     }
-    if (key == 'w') {
+    if (key == 'w' || key == 'W') {
         input_array[2] = true;
     }
-    if (key == 's') {
+    if (key == 's' || key == 'S') {
         input_array[3] = true;
     }
-    if (key == 'q') {
+    if (key == 'q' || key == 'Q') {
         input_array[4] = true;
     }
-    if (key == 'e') {
+    if (key == 'e' || key == 'E') {
         input_array[5] = true;
     }
-    if (key == 'f') {
+    if (key == 'f' || key == 'F') {
         input_array[6] = true;
     }
-    if (key == 'r') {
+    if (key == 'r' || key == 'R') {
         input_array[7] = true;
     }
-    if (key == 'i') {
+    if (key == 'i' || key == 'I') {
         // i is reserved for the inventory screen, toggles on and off
         // Only allow using the inventory after the dungeon is initialised, and add a 500 ms cooldown
         if (game_state > 0 && (millis() - inventory_cooldown) > 500) {
@@ -135,28 +135,28 @@ void keyPressed() {
 }
 
 void keyReleased() {
-    if (key == 'a') {
+    if (key == 'a' || key == 'A') {
         input_array[0] = false;
     }
-    if (key == 'd') {
+    if (key == 'd' || key == 'D') {
         input_array[1] = false;
     }
-    if (key == 'w') {
+    if (key == 'w' || key == 'W') {
         input_array[2] = false;
     }
-    if (key == 's') {
+    if (key == 's' || key == 'S') {
         input_array[3] = false;
     }
-    if (key == 'q') {
+    if (key == 'q' || key == 'Q') {
         input_array[4] = false;
     }
-    if (key == 'e') {
+    if (key == 'e' || key == 'E') {
         input_array[5] = false;
     }
-    if (key == 'f') {
+    if (key == 'f' || key == 'F') {
         input_array[6] = false;
     }
-    if (key == 'r') {
+    if (key == 'r' || key == 'R') {
         input_array[7] = false;
     }
 }

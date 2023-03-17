@@ -60,10 +60,10 @@ final class DungeonLevelHandler {
         level_interactables.add(new Staircase(entry_staircase_pos[0], entry_staircase_pos[1], false));
         level_interactables.add(new Staircase(exit_staircase_pos[0], exit_staircase_pos[1], true));
         partition_tree.spawnItems(level_tile_map, level_interactables, rand, 0);
-        partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
+        partition_tree.spawnMonsters(level_tile_map, monsters, level_interactables, depth, rand);
         // Force at least {depth} monsters to spawn
         while(monsters.size() < depth + 1) {
-            partition_tree.spawnMonsters(level_tile_map, monsters, depth, rand, 0);
+            partition_tree.spawnMonsters(level_tile_map, monsters, level_interactables, depth, rand);
         }
         return entry_staircase_pos;
     }
@@ -102,7 +102,7 @@ final class DungeonLevelHandler {
     // -1 if none are close
     int checkInteractablessProximity() {
         // First check if any items are spawned on the current tile
-        if (level_tile_map[Math.round(player.getLocation().x)][Math.round(player.getLocation().y)] == 3) {
+        if (level_tile_map[player.getDisplayTileLocation()[0]][player.getDisplayTileLocation()[1]] == 3) {
             // check in backwards order because the staircases are at the start of the list, we don't
             // want the player to miss an item because it's too close to the staircase
             for (int i = level_interactables.size() - 1; i >=0; i--) {
@@ -165,20 +165,22 @@ final class DungeonLevelHandler {
         // Draw the level_tile_map
         for (int x = 0; x < level_tile_map.length; x++) {
             for (int y = 0; y < level_tile_map[x].length; y++) {
+                int fill_val = 0;
                 switch (level_tile_map[x][y]) {
                     case 1:
-                        fill(209);
+                        fill_val = ((x+y) % 2 == 0) ? 159 : 169;
                         break;
                     case 2:
-                        fill(50);
+                        fill_val = 50;
                         break;
                     case 3:
-                    // Used for room tiles which are occupied
-                        fill(209);
+                        // Used for room tiles which are occupied
+                        fill_val = ((x+y) % 2 == 0) ? 159 : 169;
                         break;
                     default:
-                        fill(125);
+                        fill_val = 125;
                 }
+                fill(fill_val);
                 rect(x * tile_size, y * tile_size, tile_size, tile_size);
             }
         }

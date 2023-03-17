@@ -14,6 +14,7 @@ class Kobold extends Monster {
         if (current_path == null
             || current_path[current_path.length - 1][0] != last_pack_position[0]
             || current_path[current_path.length - 1][1] != last_pack_position[1]) {
+                super.setFullSpeed();
                 // A new path is needed
                 current_path = navigateAStar(level_tile_map, last_pack_position);
                 super.hunting_the_player = false;

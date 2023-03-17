@@ -147,8 +147,13 @@ final class CombatHandler {
         fill(100);
         rect(x_offset + small_step * 2, small_step * 4, x_segment * 2 - small_step * 4, (y_segment - small_step * 4) / 2);
         // Draw character
-        entity.getImage().resize(0, (y_segment - small_step * 4) / 2);
-        image(entity.getImage(), x_offset + small_step * 2 + ((x_segment * 2 - small_step * 4) - entity.getImage().width) / 2, small_step * 4);
+        PImage entity_image = entity.getImage();
+        if (entity.getType() == "Mimic") {
+            Mimic mimic = (Mimic) entity;
+            entity_image = mimic.getMimicRevealedImage();
+        }
+        entity_image.resize(0, (y_segment - small_step * 4) / 2);
+        image(entity_image, x_offset + small_step * 2 + ((x_segment * 2 - small_step * 4) - entity_image.width) / 2, small_step * 4);
         // Health bar
         fill(100, 0, 0);
         rect(x_offset + small_step * 2, (y_segment - small_step * 4) / 2 + small_step * 6, x_segment * 2 - small_step * 4, small_step * 3);
